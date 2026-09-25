@@ -1,0 +1,9 @@
+<h1>Usuarios activos</h1>
+
+<p *ngIf="loading">Cargando...</p>
+
+<ul *ngIf="!loading">
+  <li *ngFor="let user of users">
+    <strong>{{ user.name }}</strong> — {{ user.email }}
+  </li>
+</ul>
