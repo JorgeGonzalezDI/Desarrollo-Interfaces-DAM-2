@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsersService } from '../../services/users.service';
 import { User } from '../../models/user.model';
@@ -10,8 +10,11 @@ import { User } from '../../models/user.model';
   templateUrl: './users.page.html'
 })
 export class UsersPage implements OnInit {
-  users: User[] = [];
-  loading = false;
+  // signals: cuando cambian con .set(...), Angular repinta la vista solo.
+  // (con una propiedad normal, en las versiones nuevas de Angular ya no
+  // se entera automaticamente de cambios que vienen de un async/await).
+  users = signal<User[]>([]);
+  loading = signal(false);
 
   constructor(private usersService: UsersService) {}
 
@@ -21,12 +24,13 @@ export class UsersPage implements OnInit {
 
   async loadUsers() {
     try {
-      this.loading = true;
-      this.users = await this.usersService.getActiveUsers();
+      this.loading.set(true);
+      const data = await this.usersService.getActiveUsers();
+      this.users.set(data);
     } catch (error) {
       console.error('Error:', error);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }
