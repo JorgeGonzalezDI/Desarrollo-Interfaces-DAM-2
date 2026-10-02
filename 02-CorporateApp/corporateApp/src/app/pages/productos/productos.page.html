@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Productos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-grid>
+
+    <ion-row class="header">
+      <ion-col size="1">ID</ion-col>
+      <ion-col size="2.5">Nombre</ion-col>
+      <ion-col size="2.5">Vendedor</ion-col>
+      <ion-col size="1.5">Uds.</ion-col>
+      <ion-col size="2">Precio</ion-col>
+      <ion-col size="2.5">Foto</ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let product of products()">
+      <ion-col size="1">{{ product.id }}</ion-col>
+      <ion-col size="2.5">{{ product.nombre }}</ion-col>
+      <ion-col size="2.5">{{ product.vendedor }}</ion-col>
+      <ion-col size="1.5">{{ product.unidades }}</ion-col>
+      <ion-col size="2">{{ product.precio }} €</ion-col>
+      <ion-col size="2.5">
+        <img [src]="product.foto" width="60" />
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+
+</ion-content>

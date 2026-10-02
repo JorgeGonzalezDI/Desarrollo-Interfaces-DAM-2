@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "nombre": "Portátil Dell",
+    "vendedor": "Ana García",
+    "unidades": 12,
+    "precio": 1200,
+    "foto": "assets/images/dell.jpg"
+  },
+  {
+    "id": 2,
+    "nombre": "Monitor LG",
+    "vendedor": "Luis Martín",
+    "unidades": 8,
+    "precio": 299,
+    "foto": "assets/images/lg.jpg"
+  },
+  {
+    "id": 3,
+    "nombre": "Teclado Logitech",
+    "vendedor": "Carlos Pérez",
+    "unidades": 25,
+    "precio": 89,
+    "foto": "assets/images/logitech.jpg"
+  }
+]
