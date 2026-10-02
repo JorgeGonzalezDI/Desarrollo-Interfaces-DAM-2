@@ -1,6 +1,6 @@
-# DAM 2 - Segundo curso
+# DAM 2 - Jorge Gonzalez Gomez
 
-Todo el trabajo del segundo curso de DAM (Desarrollo de Aplicaciones Multiplataforma), organizado por asignatura. Se va subiendo poco a poco segun avanza el curso.
+Repositorio del segundo curso de DAM (Desarrollo de Aplicaciones Multiplataforma, FP Grado Superior), organizado por asignatura. Se va subiendo poco a poco segun avanza el curso.
 
 ## Estructura
 
