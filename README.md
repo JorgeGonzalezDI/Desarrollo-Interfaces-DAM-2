@@ -1,31 +1,19 @@
-# Desarrollo de Interfaces (0488) - DAM 2
+# DAM 2 - Segundo curso
 
-Asignatura de Desarrollo de Interfaces (FP DAM, Nebrija). Trabajamos con
-**Ionic + Angular** para crear interfaces de aplicaciones móviles/web
-híbridas.
+Todo el trabajo del segundo curso de DAM (Desarrollo de Aplicaciones Multiplataforma), organizado por asignatura. Se va subiendo poco a poco segun avanza el curso.
 
 ## Estructura
 
 ```
-Desarrollo de Interfaces/
-├── 00-Apuntes/
-└── 01-Introduccion-Ionic/
-    ├── 00-teoria-y-apuntes.md      -> teoría de la tarea, con huecos para capturas
-    ├── 01-guia-tecnica-capturas.md -> pasos exactos para conseguir cada captura
-    ├── capturas/                   -> aquí van las imágenes de las capturas
-    └── usersApp/                   -> proyecto Ionic (código de la tarea)
-└── 02-CorporateApp/                -> Ionic + Angular standalone + Capacitor + GitHub + Vercel
-    ├── 00-teoria-y-apuntes.md
-    ├── 01-guia-tecnica-capturas.md
-    ├── capturas/
-    └── corporateApp/               -> proyecto Ionic
+DAM 2/
+├── Acceso a Datos/
+├── Desarrollo de Interfaces/
+├── Programacion de Servicios y Procesos/
+└── Unity/
 ```
 
-Cada carpeta numerada es una tarea/entrega distinta, igual que en las demás
-asignaturas de este curso. Cada tarea se abre en VS Code abriendo su
-subcarpeta del proyecto Ionic (la que tiene `package.json`).
+Cada asignatura tiene su propio README con el detalle de sus temas y proyectos.
 
-## Estado
-
-- [ ] 01-Introduccion-Ionic (en progreso)
-- [ ] 02-CorporateApp (entrega 05-10-2026, en progreso)
+- Los proyectos Java son Maven: se abren en IntelliJ con **File -> Open...** sobre la carpeta que tiene el `pom.xml`.
+- Los proyectos de Desarrollo de Interfaces (Ionic/Angular) se abren con `npm install && ionic serve` dentro de cada carpeta de proyecto.
+- Los proyectos de Unity se abren con Unity Hub, añadiendo la carpeta del proyecto correspondiente dentro de `Unity/Proyectos`.
