@@ -1,4 +1,9 @@
+# Dependencias y compilados de Angular/Ionic (se regeneran con npm install / npm run build)
 **/node_modules/
 **/.angular/
 **/dist/
 **/www/
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
