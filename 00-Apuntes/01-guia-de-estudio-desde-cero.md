@@ -6,11 +6,11 @@
 
 ## Índice
 
-1. [El mapa: de qué va la asignatura](#1-el-mapa-de-qué-va-la-asignatura)
+1. [El mapa: de qué va la asignatura](#1-el-mapa-de-qué-va-la-asignatura) — **incluye qué es un framework y qué problema resuelve Angular**
 2. [Las herramientas: Node, npm, Ionic CLI, la terminal](#2-las-herramientas-node-npm-ionic-cli-la-terminal)
 3. [JavaScript y TypeScript: lo mínimo para leer el código](#3-javascript-y-typescript-lo-mínimo-para-leer-el-código)
 4. [Práctica: paradigmas asíncronos de JavaScript (`paradigmas-js`)](#4-práctica-paradigmas-asíncronos-de-javascript-paradigmas-js)
-5. [Angular: las piezas](#5-angular-las-piezas)
+5. [Angular: las piezas](#5-angular-las-piezas) — **data binding explicado desde cero en 5.3**
 6. [Práctica 1: el componente galería (data binding)](#6-práctica-1-el-componente-galería-data-binding)
 7. [Práctica: `usersApp` línea a línea](#7-práctica-usersapp-línea-a-línea)
 8. [Práctica 2: `corporateApp` línea a línea](#8-práctica-2-corporateapp-línea-a-línea)
@@ -23,7 +23,7 @@
 **Parte 2 — Consumo de APIs REST** (clase del 05-10-2026)
 
 14. [¿Qué es una API y qué es REST?](#14-qué-es-una-api-y-qué-es-rest)
-15. [Promise vs Observable (`HttpClient` y RxJS)](#15-promise-vs-observable-httpclient-y-rxjs)
+15. [Promise vs Observable (`HttpClient` y RxJS)](#15-promise-vs-observable-httpclient-y-rxjs) — **por qué con APIs no se usa `async/await`**
 16. [Actividad guiada: `dam2-productos` (dummyjson) línea a línea](#16-actividad-guiada-dam2-productos-dummyjson-línea-a-línea)
 17. [El ejemplo del dossier: directorio de usuarios con `async` pipe](#17-el-ejemplo-del-dossier-directorio-de-usuarios-con-async-pipe)
 18. [Ejercicio propuesto: Maestro-Detalle con Rick and Morty](#18-ejercicio-propuesto-maestro-detalle-con-la-api-de-rick-and-morty)
@@ -70,6 +70,149 @@ Piensa en una tarta de capas. Cada una se apoya en la anterior:
 
 **Idea clave:** cuando ejecutas `ionic serve`, todo se **compila** a HTML + CSS + JavaScript
 normal, que es lo único que el navegador entiende.
+
+### 1.1 ¿Qué es un framework? (y en qué se diferencia de una librería)
+
+Esta es la pregunta clave para entender Angular, así que vamos despacio.
+
+**Librería** = una **caja de herramientas**. Tú escribes tu programa como quieras y, cuando
+necesitas algo, **tú llamas** a la herramienta.
+
+```java
+// Java: usas la librería Math cuando TÚ quieres
+double r = Math.sqrt(16);
+```
+
+Tú tienes el control: decides qué se ejecuta, cuándo y en qué orden. La librería solo hace lo que
+le pides, cuando se lo pides.
+
+**Framework** = un **esqueleto de programa que ya funciona**, con unas reglas, y **tú rellenas los
+huecos**. Aquí el control es al revés: **el framework llama a tu código** cuando a él le toca. A
+esto se le llama **inversión de control**, y se resume en una frase famosa:
+*"no nos llames, ya te llamaremos nosotros"*.
+
+**El mejor ejemplo lo conoces ya: Unity.**
+
+```csharp
+public class Jugador : MonoBehaviour {
+    void Start()  { /* se ejecuta al aparecer el objeto */ }
+    void Update() { /* se ejecuta en cada frame */ }
+}
+```
+
+Tú **nunca** escribes `jugador.Update()` en ningún sitio. Escribes el método y **Unity decide
+cuándo llamarlo** (60 veces por segundo). Tampoco escribes el bucle del juego, ni el código que
+pinta en pantalla, ni el que lee el teclado: eso ya lo hace Unity. Tú solo rellenas lo que es
+propio de tu juego. **Unity es un framework.**
+
+**Angular es exactamente igual, pero para aplicaciones web:**
+
+| | Unity | Angular |
+|---|---|---|
+| Tú escribes… | Scripts (clases C#) | Componentes (clases TypeScript + HTML) |
+| El framework llama a… | `Start()`, `Update()` | `constructor`, `ngOnInit()`… |
+| El framework se encarga de… | Bucle del juego, pintar, físicas, input | Pintar la página, actualizarla cuando cambian los datos, navegar entre pantallas |
+| Reglas que te impone | Heredar de `MonoBehaviour`, carpeta `Assets`… | `@Component`, carpetas, ficheros `.ts`/`.html`/`.scss`… |
+
+Otra analogía: una **librería** es ir a Leroy Merlin a comprar ladrillos y herramientas; construyes
+la casa como quieras. Un **framework** es una casa prefabricada con la estructura, la luz y el agua
+ya puestas: tú decides la distribución y la decoración, pero **respetando su estructura**.
+
+| Ejemplos | Librería | Framework |
+|---|---|---|
+| Java | `java.util`, Gson, JDBC | Spring, JavaFX |
+| JavaScript | RxJS, Capacitor | **Angular**, React* |
+| Juegos | — | **Unity** |
+
+\*React técnicamente se llama a sí mismo "librería", pero eso da igual ahora.
+
+> **Para clase:** *"Un framework es una estructura base que impone una forma de organizar el
+> código y que llama a nuestro código cuando corresponde (inversión de control). Una librería es
+> un conjunto de funciones que nosotros llamamos cuando queremos."*
+
+### 1.2 ¿Qué problema resuelve Angular? (cómo sería SIN Angular)
+
+Imagina que quieres mostrar la lista de productos en una web **solo con HTML y JavaScript**, sin
+Angular. Tendrías que hacer **a mano** todo esto:
+
+```html
+<!-- index.html -->
+<ul id="lista"></ul>
+<p>Total: <span id="total"></span></p>
+<button id="boton">Añadir producto</button>
+```
+
+```js
+// codigo.js — SIN Angular
+let productos = ['Portátil', 'Monitor'];
+
+function pintar() {
+  const ul = document.getElementById('lista');    // 1. buscar el elemento en la página
+  ul.innerHTML = '';                              // 2. borrar lo que había
+  for (const p of productos) {                    // 3. crear un <li> por producto
+    const li = document.createElement('li');
+    li.textContent = p;
+    ul.appendChild(li);
+  }
+  document.getElementById('total').textContent = productos.length;   // 4. actualizar el total
+}
+
+document.getElementById('boton').addEventListener('click', () => {  // 5. escuchar el clic
+  productos.push('Teclado');
+  pintar();                                       // 6. ¡acordarte de volver a pintar!
+});
+
+pintar();
+```
+
+Funciona, pero fíjate en el problema: **cada vez que cambian los datos, tienes que buscar los
+elementos de la página y cambiarlos tú a mano**, y si se te olvida llamar a `pintar()`, la
+pantalla muestra datos viejos. Con 4 pantallas, formularios y datos que llegan de internet, esto
+se vuelve inmanejable.
+
+**Lo mismo CON Angular:**
+
+```ts
+// lista.page.ts
+export class ListaPage {
+  productos = signal(['Portátil', 'Monitor']);
+  anadir() { this.productos.update(lista => [...lista, 'Teclado']); }   // lista nueva = lo que había + 'Teclado'
+}
+```
+
+```html
+<!-- lista.page.html -->
+<ul>
+  @for (p of productos(); track p) { <li>{{ p }}</li> }
+</ul>
+<p>Total: {{ productos().length }}</p>
+<button (click)="anadir()">Añadir producto</button>
+```
+
+Ya no hay `getElementById`, ni `createElement`, ni `pintar()`. **Tú solo describes cómo tiene que
+verse la página en función de tus datos**, y Angular se encarga de que la pantalla **siempre**
+coincida con los datos. Cambias el dato → Angular actualiza la pantalla solo.
+
+Esa es la idea más importante de toda la asignatura:
+
+> **En Angular, la pantalla es un reflejo de tus datos.** Tú cambias los datos (en el `.ts`) y
+> Angular cambia la pantalla (el `.html`). Nunca tocas la pantalla a mano.
+
+A esto se le llama programación **declarativa** (dices *qué* quieres ver) frente a
+**imperativa** (dices *paso a paso cómo* cambiarlo, como en el ejemplo sin Angular).
+
+### 1.3 Qué te da Angular "de serie"
+
+| Pieza | Para qué | Sección |
+|---|---|---|
+| **Componentes** | Dividir la app en trozos (páginas, menús, tarjetas…) | 5.1 |
+| **Data binding** | Conectar los datos del `.ts` con lo que se ve en el `.html` | 5.3 |
+| **Directivas** (`@for`, `@if`…) | Repetir y mostrar/ocultar trozos de HTML | 5.4 |
+| **Router** | Navegar entre pantallas según la URL | 5.8 |
+| **Servicios + inyección de dependencias** | Lógica y datos compartidos entre pantallas | 5.9 |
+| **HttpClient** | Pedir datos a un servidor (API) | 15 |
+| **CLI** (`ng`, `ionic generate`…) | Crear proyectos y ficheros con comandos | 2.5 |
+
 
 ---
 
@@ -453,95 +596,360 @@ consola? **No se sabe**: depende de cuál responda antes el servidor. Los tres `
 
 ## 5. Angular: las piezas
 
+> Antes de esta sección lee la [1.1 y 1.2](#11-qué-es-un-framework-y-en-qué-se-diferencia-de-una-librería):
+> si no tienes claro qué es un framework, esto no va a encajar.
+
+### 5.0 La idea central en un dibujo
+
+Todo lo de Angular gira alrededor de esto:
+
+```
+      productos.page.ts                          productos.page.html
+   (los DATOS y la LÓGICA)                       (lo que SE VE)
+ ┌───────────────────────────┐   data binding   ┌────────────────────────────┐
+ │ titulo = 'Productos'      │ ───────────────▶ │ <h1>{{ titulo }}</h1>      │
+ │ foto = 'assets/dell.jpg'  │ ───────────────▶ │ <img [src]="foto">         │
+ │ comprar() { ... }         │ ◀─────────────── │ <button (click)="comprar()"│
+ │ cantidad = 1              │ ◀──────────────▶ │ <input [(ngModel)]="cantidad">
+ └───────────────────────────┘                  └────────────────────────────┘
+            ▲
+            │ Angular vigila los datos: si cambian, repinta el HTML solo
+```
+
+- A la izquierda, una **clase normal de TypeScript** con variables y métodos (como una clase Java).
+- A la derecha, **HTML normal** con unos símbolos especiales (`{{ }}`, `[ ]`, `( )`).
+- Esos símbolos son el **data binding**: los "cables" que conectan las variables de la izquierda con
+  la pantalla de la derecha. Angular es quien mantiene esos cables funcionando.
+
 ### 5.1 Componente
 
-Un **componente** es un trozo de interfaz reutilizable con su propia lógica. Una página entera es
-un componente; un botón especial o una galería también pueden serlo. Tiene **3 ficheros**:
+Un **componente** es **un trozo de pantalla con su propia lógica**. Puede ser una página entera
+(Productos) o un trozo pequeño (una tarjeta de producto, un menú, una galería).
 
-| Fichero | Contenido | Equivale a |
+**Analogía Unity:** un componente es como un **prefab** con su script: tiene su aspecto (el HTML,
+como el modelo 3D) y su comportamiento (el `.ts`, como el script C#). Y igual que en Unity metes
+prefabs dentro de otros, en Angular metes componentes dentro de otros: la app entera es un
+**árbol de componentes**.
+
+```
+AppComponent                (raíz: siempre está)
+└── <ion-router-outlet>     (hueco donde va la página actual)
+    └── ProductosPage       (la página de la ruta /productos)
+        ├── <ion-header>    (componente de Ionic)
+        └── <ion-grid>      (componente de Ionic)
+```
+
+Cada componente son **3 ficheros** con el mismo nombre:
+
+| Fichero | Qué contiene | Analogía |
 |---|---|---|
-| `nombre.page.ts` (o `.component.ts`) | La clase TypeScript: datos y funciones. | El "cerebro". |
-| `nombre.page.html` | La **plantilla**: qué se ve. | El "esqueleto". |
-| `nombre.page.scss` | Los estilos **solo de este componente**. | La "ropa". |
+| `productos.page.ts` | La **clase**: datos (variables) y comportamiento (métodos). | El script / el cerebro |
+| `productos.page.html` | La **plantilla** (*template*): qué se dibuja. | El aspecto / el cuerpo |
+| `productos.page.scss` | Los **estilos**: colores, tamaños… Solo afectan a este componente. | La ropa |
+
+El `.ts` es lo que "convierte" una clase normal en un componente, gracias al decorador `@Component`:
 
 ```ts
 import { Component } from '@angular/core';
+import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular';
 
-@Component({
-  selector: 'app-home',                 // nombre de la etiqueta HTML: <app-home></app-home>
-  templateUrl: './home.page.html',      // dónde está su HTML
-  styleUrls: ['./home.page.scss'],      // dónde están sus estilos
-  imports: [IonHeader, IonTitle],       // qué cosas usa su HTML (componentes standalone)
+@Component({                               // "Angular: esta clase es un componente"
+  selector: 'app-home',                    // 1
+  templateUrl: './home.page.html',         // 2
+  styleUrls: ['./home.page.scss'],         // 3
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent],   // 4
 })
-export class HomePage {
-  titulo = 'Corporate App';             // un dato que puede usar el HTML
+export class HomePage {                    // 5
+  titulo = 'Corporate App';                // 6
 }
 ```
 
+1. **`selector`**: el nombre de **etiqueta HTML** que tendrá este componente. Si en otro HTML
+   escribes `<app-home></app-home>`, ahí se dibuja este componente. (Las páginas casi nunca se usan
+   así porque las pone el router, pero el selector tiene que existir).
+2. **`templateUrl`**: dónde está su HTML.
+3. **`styleUrls`**: dónde están sus estilos (es una lista `[ ]` porque podrían ser varios).
+4. **`imports`**: qué **otros componentes** usa su HTML (ver 5.2).
+5. **`export class HomePage`**: una clase normal. `export` para que otros ficheros (las rutas)
+   puedan usarla.
+6. **`titulo = 'Corporate App'`**: una **propiedad** (variable de la clase). Todo lo que pongas
+   aquí lo puede usar el HTML.
+
+**Qué pasa cuando abres `/home`:** Angular ve en las rutas que `/home` es `HomePage` → crea un
+objeto `new HomePage()` (tú nunca escribes ese `new`; lo hace Angular, inversión de control) → lee
+su HTML → sustituye los `{{ }}` y demás por los valores reales → lo pinta en el hueco del
+`router-outlet`.
+
 > **"Page" o "component"?** Para Angular son lo mismo. Ionic llama *page* a los componentes que
-> son una pantalla completa (con su ruta) y *component* a los trozos que van dentro de una página.
+> son una pantalla completa (con ruta) y *component* a los trozos que van dentro de una página.
 
 ### 5.2 Standalone
 
-Antes, en Angular, cada componente tenía que declararse en un fichero aparte llamado **módulo**
-(`NgModule`). Desde Angular 17 lo normal es **standalone**: cada componente es independiente y
-declara él mismo en `imports: [...]` todo lo que usa en su HTML.
+**Antes** (Angular hasta la versión 14 más o menos), los componentes no se podían usar solos:
+había que registrarlos en un fichero central llamado **módulo** (`app.module.ts`, con
+`@NgModule`), algo así como una "lista de inscritos". Era lioso: para usar un botón en una página
+había que importarlo en el módulo, no en la página.
 
-**Regla práctica:** si en el HTML usas `<ion-button>`, en el `.ts` tienes que importar
-`IonButton` (de `'@ionic/angular'`) y ponerlo en `imports`. Si se te olvida, sale un error del
-tipo *"'ion-button' is not a known element"*.
+**Ahora** cada componente es **standalone** (*independiente*): **declara él mismo** en su
+`imports: [...]` todo lo que usa en su HTML. No hay módulos.
+
+**Regla práctica (la que más errores te va a quitar):**
+
+> Cada etiqueta especial que escribas en el HTML tiene que estar en el `imports` del `.ts`.
+
+| Si en el `.html` usas… | En el `.ts` necesitas importar… | Desde |
+|---|---|---|
+| `<ion-button>` | `IonButton` | `'@ionic/angular'` |
+| `<ion-grid>`, `<ion-row>`, `<ion-col>` | `IonGrid`, `IonRow`, `IonCol` | `'@ionic/angular'` |
+| `routerLink="..."` | `RouterLink` | `'@angular/router'` |
+| `*ngFor` / `*ngIf` | `NgFor` / `NgIf` (o `CommonModule`) | `'@angular/common'` |
+| `[(ngModel)]` | `FormsModule` | `'@angular/forms'` |
+| `\| currency` | `CurrencyPipe` | `'@angular/common'` |
+| `@for` / `@if` | **nada** (vienen de serie) | — |
+
+Si te olvidas, sale un error del tipo *"'ion-button' is not a known element"* o
+*"Can't bind to 'ngForOf'"*. Fíjate que el nombre siempre es el de la etiqueta en
+**PascalCase**: `ion-card-title` → `IonCardTitle`.
+
+Para importarlo se hace en **dos sitios** del mismo fichero:
+
+```ts
+import { IonButton } from '@ionic/angular';   // ① arriba: traer la clase al fichero (TypeScript)
+
+@Component({
+  imports: [IonButton],                        // ② en el decorador: decirle a Angular que el HTML la usa
+})
+```
 
 ### 5.3 Data binding: cómo se conecta el `.ts` con el `.html`
 
-Es **lo más importante de Angular**. Hay 4 formas, y se distinguen por los símbolos:
+#### El problema
 
-| Sintaxis | Nombre | Dirección | Ejemplo |
-|---|---|---|---|
-| `{{ dato }}` | **Interpolación** | `.ts` → `.html` (texto) | `<h1>{{ titulo }}</h1>` |
-| `[propiedad]="dato"` | **Property binding** | `.ts` → `.html` (atributo) | `<img [src]="product.foto">` |
-| `(evento)="funcion()"` | **Event binding** | `.html` → `.ts` | `<ion-button (click)="enviar()">` |
-| `[(ngModel)]="dato"` | **Two-way binding** | en los dos sentidos | `<ion-input [(ngModel)]="correo">` |
+El `.ts` y el `.html` son **dos ficheros distintos**. Si en el `.ts` tienes `titulo = 'Productos'`,
+¿cómo sabe el HTML que tiene que escribir "Productos"? Y si en el HTML hay un botón, ¿cómo llama a
+un método del `.ts`?
 
-- **Interpolación** `{{ }}`: escribe el valor como texto. Dentro puedes poner expresiones
-  sencillas: `{{ product.precio * 2 }}`, `{{ nombre.toUpperCase() }}`.
-- **Property binding** `[ ]`: rellena un atributo con el valor de una variable.
-  - `src="product.foto"` (sin corchetes) → pondría literalmente el texto `"product.foto"`. ❌
-  - `[src]="product.foto"` (con corchetes) → pone el valor de la variable: `assets/images/dell.jpg`. ✅
-- **Event binding** `( )`: cuando pasa algo (clic, escribir…), llama a una función del `.ts`.
-- **Two-way** `[( )]` (se llama "banana in a box" 🍌📦): lo que escribe el usuario actualiza la
-  variable, y si la variable cambia, cambia el campo. Necesita importar `FormsModule`.
+**Data binding** (en español, "enlace de datos") es la respuesta: unos **símbolos especiales** que
+pones en el HTML para conectarlo con la clase. "Binding" = atadura, enlace, cable.
+
+Hay **4 tipos**, y se distinguen **solo por los símbolos**:
+
+```
+ {{ dato }}           interpolación       .ts ──▶ .html   (escribir un texto)
+ [atributo]="dato"    property binding    .ts ──▶ .html   (rellenar un atributo)
+ (evento)="metodo()"  event binding       .ts ◀── .html   (avisar de que ha pasado algo)
+ [(ngModel)]="dato"   two-way binding     .ts ◀─▶ .html   (las dos cosas a la vez)
+```
+
+Vamos a verlos todos con **el mismo ejemplo**, una mini tienda:
+
+```ts
+// tienda.page.ts
+export class TiendaPage {
+  producto = 'Portátil Dell';
+  precio = 1200;
+  foto = 'assets/images/dell.jpg';
+  agotado = false;
+  cantidad = 1;
+
+  comprar() {
+    console.log('Has comprado ' + this.cantidad + ' ' + this.producto);
+  }
+}
+```
+
+#### 1) Interpolación: `{{ }}`
+
+**Qué hace:** escribe el valor de una variable **como texto** dentro del HTML.
+
+```html
+<h1>{{ producto }}</h1>               <!-- se ve: Portátil Dell -->
+<p>Precio: {{ precio }} €</p>         <!-- se ve: Precio: 1200 € -->
+```
+
+**Cómo leerlo:** "aquí dentro va el valor de `producto`". Las dobles llaves son como un hueco que
+Angular rellena. Es el equivalente a hacer en Java:
+
+```java
+System.out.println("Precio: " + precio + " €");
+```
+
+**Dentro de `{{ }}` puedes poner expresiones sencillas**, no solo variables:
+
+```html
+<p>{{ precio * 2 }}</p>                      <!-- 2400 -->
+<p>{{ producto.toUpperCase() }}</p>          <!-- PORTÁTIL DELL -->
+<p>{{ agotado ? 'Agotado' : 'Disponible' }}</p>   <!-- Disponible (operador ternario, como en Java) -->
+```
+
+Lo que **no** puedes poner: sentencias como `if`, `for`, `let x = 3` o asignaciones (`precio = 5`).
+Solo cosas que **den un valor**.
+
+**Y si la variable cambia** (por ejemplo `this.precio = 999` desde un método), Angular vuelve a
+escribir el texto solo. Eso es lo que no hacía el JavaScript sin framework.
+
+#### 2) Property binding: `[atributo]="variable"`
+
+Primero, ¿qué es un **atributo**? Las etiquetas HTML llevan **atributos**, que son ajustes con la
+forma `nombre="valor"`:
+
+```html
+<img src="assets/images/dell.jpg" width="80">
+<!--  ↑ atributo src     ↑ atributo width -->
+<button disabled>Comprar</button>
+<!--     ↑ atributo disabled (el botón no se puede pulsar) -->
+```
+
+**El problema:** si escribes una variable dentro de un atributo normal, HTML no sabe que es una
+variable; la toma como **texto literal**:
+
+```html
+<img src="foto">           <!-- ❌ busca un fichero que se llama literalmente "foto" -->
+```
+
+**La solución:** poner el atributo **entre corchetes**. Los corchetes significan
+*"lo que hay entre comillas NO es un texto: es código TypeScript, evalúalo"*:
+
+```html
+<img [src]="foto">         <!-- ✅ src = el VALOR de la variable foto = 'assets/images/dell.jpg' -->
+```
+
+Compara:
+
+| Escribes | Angular entiende | Resultado |
+|---|---|---|
+| `src="foto"` | El texto `"foto"` | Imagen rota |
+| `[src]="foto"` | El valor de la variable `foto` | `assets/images/dell.jpg` ✅ |
+| `src="{{ foto }}"` | Interpolación dentro del atributo (también vale para textos) | `assets/images/dell.jpg` ✅ |
+
+Más ejemplos con nuestra tienda:
+
+```html
+<button [disabled]="agotado">Comprar</button>
+<!-- si agotado es true, el botón se desactiva; si cambia a false, se activa solo -->
+
+<ion-button [color]="agotado ? 'medium' : 'success'">Comprar</ion-button>
+<!-- botón gris si está agotado, verde si no -->
+
+<p [style.color]="precio > 1000 ? 'red' : 'black'">{{ precio }} €</p>
+<!-- texto rojo si es caro -->
+```
+
+**Truco para recordarlo:** los corchetes `[ ]` parecen una **caja donde METES** un valor:
+el dato **entra** en el HTML.
+
+#### 3) Event binding: `(evento)="metodo()"`
+
+Hasta ahora los datos iban del `.ts` al `.html`. Ahora al revés: el usuario **hace algo** en la
+pantalla (pulsar, escribir…) y queremos que se ejecute código del `.ts`.
+
+```html
+<ion-button (click)="comprar()">Comprar</ion-button>
+```
+
+**Cómo leerlo:** "cuando ocurra el evento `click` en este botón, ejecuta el método `comprar()` de
+la clase". Los paréntesis rodean el **nombre del evento**.
+
+Sin Angular habría que escribir
+`document.getElementById('boton').addEventListener('click', comprar)`. En Java Swing sería un
+`boton.addActionListener(e -> comprar())`. Es la misma idea, pero escrita directamente en el HTML.
+
+Eventos habituales:
+
+| Evento | Cuándo pasa |
+|---|---|
+| `(click)` | Al pulsar |
+| `(input)` | Cada vez que se escribe una letra en un campo |
+| `(change)` | Cuando cambia el valor y se sale del campo |
+| `(submit)` | Al enviar un formulario |
+| `(ionChange)` | Evento propio de componentes Ionic (selects, toggles…) |
+
+Si necesitas los datos del evento (qué tecla, qué se ha escrito…), Angular te los da en la
+variable especial **`$event`**: `(input)="buscar($event)"`.
+
+**Truco para recordarlo:** los paréntesis `( )` son como unas **orejas que escuchan**: el HTML
+**avisa** al código.
+
+#### 4) Two-way binding: `[(ngModel)]="variable"`
+
+Es la combinación de los dos anteriores: **`[ ]` + `( )` = `[( )]`**. Sirve para campos de
+formulario donde el dato tiene que ir **en los dos sentidos**:
+
+```html
+<ion-input [(ngModel)]="cantidad" type="number"></ion-input>
+<p>Vas a comprar {{ cantidad }} unidades</p>
+```
+
+Qué pasa:
+- **`.ts → .html`**: al abrir la página, el campo muestra `1` (el valor inicial de `cantidad`).
+- **`.html → .ts`**: el usuario escribe `3` → la variable `cantidad` pasa a valer `3` **sola**.
+- Como `cantidad` ha cambiado, el `<p>` de debajo se actualiza a "Vas a comprar 3 unidades"
+  **mientras escribes**.
+
+Por dentro, `[(ngModel)]="cantidad"` es un atajo de:
+`[ngModel]="cantidad" (ngModelChange)="cantidad = $event"` (meter el valor + escuchar cambios).
+
+- Necesita importar **`FormsModule`** (de `'@angular/forms'`) en el componente.
+- La forma `[( )]` se llama **"banana in a box"** 🍌📦: el plátano `( )` dentro de la caja `[ ]`.
+  Si lo escribes al revés, `([ngModel])`, no funciona.
+
+#### Resumen para memorizar
+
+| Símbolo | Nombre | Dirección | Para qué | Ejemplo |
+|---|---|---|---|---|
+| `{{ }}` | Interpolación | `.ts → .html` | Escribir un texto | `{{ producto }}` |
+| `[ ]` | Property binding | `.ts → .html` | Rellenar un atributo | `[src]="foto"` |
+| `( )` | Event binding | `.html → .ts` | Reaccionar a algo del usuario | `(click)="comprar()"` |
+| `[( )]` | Two-way binding | `.ts ↔ .html` | Campos de formulario | `[(ngModel)]="cantidad"` |
+
+> Regla: **corchetes = entra un dato en el HTML. Paréntesis = sale un aviso del HTML.**
+
+#### Practica leyendo tu propio código
+
+En `02-CorporateApp/corporateApp/src/app/pages/productos/productos.page.html`, encuentra:
+1. Una **interpolación** → `{{ product.nombre }}`, `{{ product.precio }} €`…
+2. Un **property binding** → `<img [src]="product.foto">`
+3. ¿Hay algún **event binding**? → No en esa página. En la actividad de dummyjson sí:
+   `<ion-button (click)="loadProducts()">Reintentar</ion-button>`.
 
 ### 5.4 Directivas de control: repetir y condicionar
 
-**Sintaxis clásica** (la que usa tu profe en los PDF):
+Las **directivas** son instrucciones en el HTML para **repetir** o **mostrar/ocultar** trozos.
+Son el `for` y el `if` de la plantilla.
+
+**Sintaxis nueva** (Angular 17+, la que recomienda tu profe; no hay que importar nada):
 
 ```html
-<li *ngFor="let user of users">{{ user.name }}</li>   <!-- repite el <li> por cada usuario -->
-<p *ngIf="loading">Cargando...</p>                      <!-- solo se muestra si loading es true -->
-```
-
-- `*ngFor="let x of lista"` = un bucle *for-each* (Java: `for (User user : users)`).
-  Hay que importar `NgFor` (o `CommonModule`).
-- `*ngIf="condicion"` = un `if`. Hay que importar `NgIf` (o `CommonModule`).
-
-**Sintaxis nueva** (Angular 17+), hace lo mismo sin importar nada:
-
-```html
-@for (user of users; track user.id) {
+@for (user of users; track user.id) {     <!-- for-each: un <li> por cada usuario -->
   <li>{{ user.name }}</li>
 }
-@if (loading) {
+
+@if (loading) {                            <!-- if: solo se pinta si loading es true -->
   <p>Cargando...</p>
 } @else {
   <p>Listo</p>
 }
 ```
 
-`track user.id` le dice a Angular qué identifica a cada elemento, para redibujar solo lo que cambia.
+- `@for (user of users; ...)` = Java `for (User user : users)`. Dentro de las llaves, `user` es el
+  elemento de esa vuelta.
+- `track user.id` le dice a Angular qué identifica a cada elemento, para que, si cambia la lista,
+  solo redibuje las filas que han cambiado. Es **obligatorio** en `@for`.
+- Extra: `@for (...) { ... } @empty { <p>No hay nada</p> }` → lo que se muestra si la lista está vacía.
+
+**Sintaxis clásica** (la verás en PDFs antiguos y en tu `usersApp`):
+
+```html
+<li *ngFor="let user of users">{{ user.name }}</li>
+<p *ngIf="loading">Cargando...</p>
+```
+
+El `*` delante indica que la directiva **cambia la estructura** del HTML (añade o quita
+elementos). Hay que importar `NgFor` / `NgIf` (o `CommonModule`). Hacen lo mismo que `@for`/`@if`.
 
 ### 5.5 Pipes `|`
 
-Transforman un valor **solo para mostrarlo**:
+Un **pipe** ("tubería") transforma un valor **solo para mostrarlo**, sin cambiar la variable:
 
 ```html
 {{ precio | currency:'EUR' }}       <!-- €1,200.00  (formato inglés, el que viene por defecto) -->
@@ -549,60 +957,90 @@ Transforman un valor **solo para mostrarlo**:
 {{ nombre | uppercase }}            <!-- ANA -->
 ```
 
-Los pipes como `currency` y `date` vienen de `@angular/common` y hay que importarlos en el
-componente (`CurrencyPipe`, `DatePipe`…). Para que salgan en formato español (`1.200,00 €`) hay
-que configurar el idioma de la app; de momento en tu práctica el precio se pone a mano:
-`{{ product.precio }} €`.
+Se lee "coge `precio` y pásalo por la tubería `currency`". Lo que va después de `:` son opciones.
+Hay que importarlos en el componente (`CurrencyPipe`, `DatePipe`, `UpperCasePipe`… de
+`'@angular/common'`). En tu Corporate App el precio se pone a mano: `{{ product.precio }} €`.
 
 ### 5.6 Signals (y por qué los usamos)
 
-Angular tiene que saber **cuándo** ha cambiado un dato para volver a pintar la pantalla
-(*detección de cambios*). Antes lo hacía con una librería llamada **zone.js** que vigilaba todo.
-**Angular 22 ya no la usa** (*zoneless*). Consecuencia:
+Volvamos a la idea central: **cuando cambian los datos, Angular repinta la pantalla**. Pero…
+¿cómo se **entera** Angular de que un dato ha cambiado?
+
+- **Antes** usaba una librería llamada **zone.js** que espiaba todo lo que pasaba en la página
+  (clics, temporizadores, peticiones…) y, después de cada cosa, revisaba todas las variables por
+  si alguna había cambiado. Funcionaba "por arte de magia", pero era lento.
+- **Angular 22 ya no usa zone.js** (se llama *zoneless*). Ahora hay que **avisarle**. Si cambias
+  una variable normal dentro de algo asíncrono (después de un `await` o dentro de un `subscribe`),
+  **Angular no se entera** y la pantalla se queda como estaba.
 
 ```ts
 products: Product[] = [];
 async ngOnInit() {
-  this.products = await this.servicio.getProducts();   // ❌ Angular no se entera: la tabla sale vacía
+  this.products = await this.servicio.getProducts();   // ❌ la variable cambia, la pantalla NO
 }
 ```
 
-La solución son los **signals** (señales): una "caja" que avisa a Angular cuando cambia su contenido.
+Este fue exactamente el bug de `usersApp` ("Cargando..." para siempre).
+
+La solución son los **signals** ("señales"). Un signal es una **caja que guarda un valor y que
+avisa a Angular cada vez que cambia lo que hay dentro**:
 
 ```ts
 import { signal } from '@angular/core';
 
-products = signal<Product[]>([]);            // crear: caja con un array vacío dentro
+products = signal<Product[]>([]);      // CREAR: caja de tipo Product[], empieza con [] dentro
 
-this.products.set(nuevosDatos);              // escribir: cambia el contenido Y avisa a Angular
-this.products();                             // leer: se llama como una función
+this.products.set(nuevaLista);         // ESCRIBIR: cambia el contenido Y avisa a Angular → repinta
+this.products();                       // LEER: se "abre la caja" llamándola como una función
 ```
 
-En el HTML también se lee con paréntesis: `*ngFor="let product of products()"`.
+En el HTML también se lee con paréntesis:
 
-> Este fue el bug de `usersApp`: la pantalla se quedaba en "Cargando..." para siempre porque
-> `loading = false` se cambiaba después de un `await` y Angular no repintaba. Con
-> `loading = signal(false)` y `.set(...)` se arregló.
+```html
+@for (product of products(); track product.id) { ... }
+<p>Hay {{ products().length }} productos</p>
+```
+
+**Analogía:** una variable normal es una pizarra donde cambias lo escrito sin que nadie se entere.
+Un signal es un grupo de WhatsApp: cada vez que cambias algo, **les llega una notificación** a
+todos los que estaban mirando.
+
+> **Regla práctica para tu Angular 22:** todo dato que se muestre en el HTML y que cambie
+> **después** de que la página se haya abierto (porque llega de un servicio, de una API, de un
+> temporizador…) → **signal**.
 
 ### 5.7 Ciclo de vida: `ngOnInit`
 
-Angular llama a ciertos métodos del componente en momentos concretos. El más usado:
+Como Angular es un framework, **él** crea y destruye los componentes, y te avisa en ciertos
+momentos llamando a métodos con nombres especiales (como `Start()` en Unity). El más usado:
 
 ```ts
 export class ProductosPage implements OnInit {   // "implements OnInit" = prometo tener ngOnInit
   ngOnInit() {
-    // se ejecuta UNA vez, cuando el componente ya está creado
+    // Angular lo llama UNA vez, justo después de crear el componente
     // → es el sitio para cargar datos
   }
 }
 ```
 
-¿Por qué no cargar los datos en el constructor? Por convenio: el constructor solo debe
-**recibir** cosas (dependencias); el trabajo de verdad va en `ngOnInit`.
+| Unity | Angular |
+|---|---|
+| `Awake()` | `constructor()` |
+| `Start()` | `ngOnInit()` |
+| `OnDestroy()` | `ngOnDestroy()` |
+
+¿Por qué no cargar los datos en el constructor? Por convenio: el constructor solo **recibe** las
+dependencias (servicios); el trabajo de verdad va en `ngOnInit`.
 
 ### 5.8 Rutas (routing)
 
-Las **rutas** dicen qué componente se muestra según la URL:
+Una app tiene **varias pantallas**, pero en realidad solo hay **un** `index.html` (es una SPA,
+*Single Page Application*). El **router** de Angular decide **qué componente se pinta según la URL**:
+
+```
+localhost:8100/home        → HomePage
+localhost:8100/productos   → ProductosPage
+```
 
 ```ts
 export const routes: Routes = [
@@ -611,20 +1049,25 @@ export const routes: Routes = [
 ];
 ```
 
-- `path`: la parte de la URL después de la barra (`/home`).
+- `path`: lo que va en la URL después de la barra.
 - `redirectTo`: redirige a otra ruta. `pathMatch: 'full'`: solo si la URL es **exactamente** esa (vacía).
-- `loadComponent: () => import(...)`: **lazy loading** (carga perezosa): el código de esa
-  página no se descarga hasta que el usuario entra en ella. La app arranca más rápido.
-  - `import('./pages/home/home.page')` carga el fichero (devuelve una promesa).
-  - `.then(m => m.HomePage)` de ese fichero (`m`, de "módulo") coge la clase `HomePage`.
-- `<router-outlet>` (o `<ion-router-outlet>` en Ionic) es el **hueco** del HTML donde se pinta
-  la página que toque según la ruta.
-- `routerLink="/productos"` en un botón o enlace = navegar a esa ruta al pulsarlo.
+- `loadComponent: () => import(...)`: **lazy loading** (carga perezosa). El código de esa página no
+  se descarga hasta que el usuario entra en ella, así la app arranca más rápido.
+  - `() => ...` es una función flecha (sección 3.4) que Angular llamará **cuando haga falta**.
+  - `import('./pages/home/home.page')` carga ese fichero (devuelve una Promise).
+  - `.then(m => m.HomePage)` de ese fichero (`m`) coge la clase `HomePage`.
+- `<router-outlet>` / `<ion-router-outlet>` es el **hueco** del HTML donde se pinta la página que
+  toque. Está en el componente raíz.
+- `routerLink="/productos"` en un botón = "al pulsarlo, navega a `/productos`".
 
 ### 5.9 Servicios e inyección de dependencias (DI)
 
-Un **servicio** es una clase que **no se ve**: se encarga de la lógica y los datos (pedir
-productos, guardar mensajes, usar el GPS…). Las páginas lo usan.
+Un **servicio** es una clase **que no se ve**: se encarga de la lógica y de conseguir los datos
+(pedir productos, guardar mensajes, usar el GPS…). Las páginas lo usan.
+
+**¿Por qué no poner el `fetch` directamente en la página?** Porque si tres páginas necesitan los
+productos, tendrías el mismo código tres veces, y si cambia la URL tendrías que cambiarlo en tres
+sitios. Con un servicio, está **en un único sitio**.
 
 ```ts
 @Injectable({ providedIn: 'root' })     // "esto es un servicio, y hay UNO para toda la app"
@@ -633,37 +1076,55 @@ export class ProductsService {
 }
 ```
 
-**Inyección de dependencias** = la página **no crea** el servicio con `new`; lo **pide**, y
-Angular se lo da:
+**Inyección de dependencias** = la página **no crea** el servicio con `new`; **lo pide**, y Angular
+se lo da ya creado:
 
 ```ts
-constructor(private productService: ProductsService) {}   // "necesito un ProductsService"
-// o, forma moderna:
-private productService = inject(ProductsService);
+constructor(private productService: ProductsService) {}   // forma clásica
+private productService = inject(ProductsService);          // forma moderna (hace lo mismo)
 ```
 
-Analogía: en un restaurante el camarero (página) no fabrica la cocina (servicio); simplemente
-la cocina existe y el restaurante (Angular) se la "asigna". Ventajas:
+**Analogía:** en un restaurante, el camarero (la página) no construye su propia cocina (el
+servicio). La cocina ya existe, y el restaurante (Angular) se la asigna. Todos los camareros usan
+**la misma** cocina.
 
+Ventajas:
 1. **Una sola instancia** compartida por toda la app (*singleton*) gracias a `providedIn: 'root'`.
-2. **Bajo acoplamiento**: si cambias de dónde salen los datos (JSON → servidor real), solo tocas
-   el servicio; las páginas ni se enteran.
-3. **Fácil de probar**: en un test se puede dar un servicio "falso".
+2. **Bajo acoplamiento**: si cambias de dónde salen los datos (JSON → API real), solo tocas el
+   servicio; las páginas ni se enteran.
+3. **Fácil de probar**: en un test se le puede dar a la página un servicio "falso".
 
 Palabras clave para el profe: **dependencia** (lo que se necesita), **proveedor/provider** (la
 receta para crearla: `providedIn: 'root'`), **inyector** (el que la guarda y la reparte),
-**inversión de control** (crear objetos deja de ser cosa del componente).
+**inversión de control** (crear objetos deja de ser cosa del componente; otra vez la idea del
+framework de la sección 1.1).
 
 ### 5.10 `main.ts`: el arranque
 
 ```ts
 bootstrapApplication(AppComponent, {    // "arranca la app empezando por AppComponent"
-  providers: [ ... ]                    // configuración global: rutas, Ionic, etc.
+  providers: [ ... ]                    // configuración global: rutas, Ionic, HttpClient...
 });
 ```
 
-Orden de arranque: `index.html` (tiene `<app-root>`) → `main.ts` → `AppComponent` (tiene el
-`router-outlet`) → la ruta decide qué página va dentro.
+Orden de arranque: el navegador abre `index.html` (que tiene `<app-root>`) → se ejecuta `main.ts`
+→ Angular crea `AppComponent` (el de selector `app-root`, que tiene el `router-outlet`) → el router
+mira la URL y mete la página que toca dentro del hueco.
+
+### 5.11 Todo junto: qué pasa al abrir `/productos` en tu Corporate App
+
+1. El navegador carga `index.html` y `main.ts` arranca Angular.
+2. El **router** ve la URL `/productos` → descarga `productos.page.ts` (lazy loading).
+3. Angular necesita crear `ProductosPage`. Ve que el constructor pide un `ProductsService` →
+   **inyección de dependencias**: se lo da.
+4. Angular crea la página y llama a **`ngOnInit()`** (ciclo de vida).
+5. `ngOnInit` pide los productos al **servicio**, que hace el `fetch` al JSON (**asíncrono**: tarda).
+6. Mientras tanto, Angular ya pinta el HTML con `products()` vacío (tabla sin filas).
+7. Llegan los datos → `this.products.set(lista)` → el **signal** avisa a Angular.
+8. Angular repinta: el **`*ngFor`** crea una fila por producto, la **interpolación** escribe
+   nombre, precio… y el **property binding** `[src]` pone cada foto.
+
+Si entiendes estos 8 pasos, entiendes el 80 % de lo que hemos hecho.
 
 ---
 
@@ -1551,96 +2012,321 @@ Regla fácil: **2xx bien, 4xx culpa tuya (cliente), 5xx culpa del servidor**.
 
 ## 15. Promise vs Observable (`HttpClient` y RxJS)
 
-Hasta ahora pedíamos datos con **`fetch`**, que devuelve una **Promise**. Angular tiene su propia
-herramienta para hacer peticiones: **`HttpClient`**, que devuelve un **Observable**.
+> Lo que te dijo tu profe es correcto: **en el proyecto de Angular + API no vas a usar `async`
+> ni `await`**, porque los datos no llegan con una **Promise** sino con un **Observable**.
+> Esta sección explica qué es eso, por qué no lleva `await` y cómo se usa. Es la más importante
+> de la Parte 2.
+>
+> Requisito: tener claro qué es una Promise y `async/await` (sección 3.10). Como dices que eso ya
+> lo tienes, vamos a construir sobre ello.
 
-### 15.1 ¿Qué es un Observable?
+### 15.1 Dos formas de pedir datos en Angular
 
-Viene de la librería **RxJS** (ya está instalada en todo proyecto Angular).
+| Herramienta | De dónde viene | Qué devuelve | Cómo se recibe el dato |
+|---|---|---|---|
+| `fetch(url)` | Del **navegador** (JavaScript normal) | Una **Promise** | `await` o `.then()` |
+| `this.http.get(url)` | De **Angular** (`HttpClient`) | Un **Observable** | `.subscribe()` o pipe `async` |
 
-**Analogía:**
-- Una **Promise** es el **avisador del restaurante**: vibra **una vez** con **un** resultado y se acabó.
-- Un **Observable** es como **suscribirte a un canal de YouTube**: no recibes nada hasta que te
-  **suscribes**, y a partir de ahí te pueden llegar **varios** avisos con el tiempo (vídeos nuevos),
-  un aviso de error, o un aviso de "el canal ha terminado".
+Hasta ahora (Corporate App) usábamos `fetch` + `async/await`. **A partir de ahora**, como pide el
+profe, usaremos **`HttpClient`**, que es la herramienta oficial de Angular para hablar con APIs.
+`HttpClient` es un **servicio** de Angular, así que se consigue por **inyección de dependencias**
+(sección 5.9): `private http = inject(HttpClient);`.
 
-En una petición HTTP, el Observable manda **un solo** valor (la respuesta) y termina, así que en
-la práctica se usa casi igual que una Promise. La diferencia importante es la siguiente:
+### 15.2 ¿Qué es un Observable? (con analogías)
 
-> **Un Observable no hace nada hasta que alguien se suscribe.** Si llamas a
-> `this.http.get(url)` y no te suscribes, **la petición ni siquiera se envía**.
+**Repaso de la Promise:** es el **avisador del restaurante**. Pides, te dan el avisador, vibra
+**una vez** con tu comida, y se acabó.
 
-### 15.2 Suscribirse: `.subscribe({ next, error })`
+**Un Observable es como una suscripción a un canal de YouTube:**
+
+| YouTube | Observable |
+|---|---|
+| El canal existe, pero **no te llega nada** si no estás suscrito. | El Observable existe, pero **no hace nada** hasta que alguien se suscribe. |
+| Le das a **Suscribirse**. | Llamas a **`.subscribe(...)`**. |
+| Te llegan notificaciones de vídeos nuevos (pueden ser muchas, a lo largo del tiempo). | Te llegan **valores** (`next`). Pueden ser varios. |
+| Si el canal tiene un problema, te llega un aviso. | Te llega un **error** (`error`). |
+| El canal cierra: ya no llegarán más vídeos. | El Observable **termina** (`complete`). |
+| Te das de baja. | `unsubscribe()`. |
+
+Hay **dos diferencias de fondo** con la Promise:
+
+**1. Un Observable puede emitir muchos valores; una Promise, solo uno.**
+Por ejemplo, un Observable podría emitir la posición del GPS cada segundo, o cada letra que el
+usuario escribe en un buscador. **Una petición HTTP solo emite un valor** (la respuesta) y termina,
+así que en la práctica, para APIs, se usa casi igual que una Promise.
+
+**2. Un Observable es "perezoso" (*lazy*): no empieza hasta que te suscribes.**
+
+Esta es la diferencia que más importa. Mira:
 
 ```ts
-this.productService.getProducts()          // devuelve un Observable (todavía no ha pedido nada)
-  .subscribe({                             // me suscribo → AHORA se hace la petición
-    next: (response) => {                  // cuando llegue un valor (la respuesta)
-      console.log(response.products);
-    },
-    error: (err) => {                      // si falla (sin red, 404, 500...)
-      console.error(err);
-    },
-    complete: () => {                      // (opcional) cuando el Observable termina
-      console.log('terminado');
-    }
-  });
+// PROMISE: la petición se envía YA, en esta línea, aunque nadie la espere
+const promesa = fetch('https://dummyjson.com/products');
+
+// OBSERVABLE: aquí NO se envía nada. Solo se ha preparado la petición.
+const observable = this.http.get('https://dummyjson.com/products');
+
+observable.subscribe(...);   // ← AHORA sí se envía la petición
 ```
 
-Es el equivalente a `.then()` (`next`) y `.catch()` (`error`) de las Promises.
+**Analogía de la receta:** un Observable es como una **receta de cocina** escrita en un papel.
+Tenerla no te da de comer; alguien tiene que **cocinarla** (suscribirse). Una Promise es un plato
+que **ya se está cocinando** desde que lo pides.
 
-### 15.3 Tabla comparativa
+> Si llamas a `this.http.get(url)` y no te suscribes, **la petición nunca se envía**. En la
+> pestaña *Network* del F12 ni siquiera aparece. Es el error número 1 con Observables.
 
-| | **Promise** | **Observable** |
-|---|---|---|
-| De dónde viene | JavaScript estándar | Librería RxJS |
-| Quién lo usa | `fetch`, funciones `async` | `HttpClient` de Angular |
-| Cuántos valores | **Uno** | **Cero, uno o muchos** a lo largo del tiempo |
-| ¿Empieza solo? | **Sí**, en cuanto lo creas | **No**, hasta que te suscribes (*lazy*) |
-| Recibir el valor | `.then(...)` o `await` | `.subscribe({ next })` o pipe `async` |
-| Recibir el error | `.catch(...)` o `try/catch` | `error:` en el subscribe, o `catchError` |
-| ¿Se puede cancelar? | No | Sí (`unsubscribe()`) |
-| Tipo en TypeScript | `Promise<Product[]>` | `Observable<Product[]>` |
+### 15.3 ¿Por qué NO se usa `async` / `await`?
 
-Si alguna vez quieres usar `await` con un Observable: `await firstValueFrom(observable)` (de `'rxjs'`).
+Porque **`await` solo sabe esperar Promises**. Un Observable no es una Promise, así que `await` no
+sabe qué hacer con él:
 
-### 15.4 La convención del `$`
-
-Cuando una variable guarda un Observable, por costumbre se le pone **un `$` al final**:
-`users$`, `products$`. No hace nada especial; solo avisa al que lee: "esto es un Observable".
-
-### 15.5 El pipe `async`
-
-En vez de suscribirte tú en el `.ts`, puedes dejar que **la plantilla se suscriba sola**:
-
-```html
-@if (users$ | async; as users) {        <!-- se suscribe, espera y guarda el resultado en "users" -->
-  @for (user of users; track user.id) { <p>{{ user.name }}</p> }
+```ts
+async cargar() {
+  const datos = await this.http.get(url);   // ❌ NO espera nada
+  console.log(datos);                        // muestra el Observable (la "receta"), no los productos
 }
 ```
 
-Ventajas: no escribes `subscribe`, y cuando sales de la página Angular **se desuscribe solo**
-(evita *memory leaks*, fugas de memoria). Hay que importar `AsyncPipe` (o `CommonModule`).
+`await` ve algo que no es una Promise, lo devuelve tal cual y sigue. `datos` es el Observable sin
+abrir, y además **la petición ni se ha enviado** (nadie se ha suscrito).
 
-### 15.6 Genéricos: `get<T>`
+Por eso con `HttpClient` el patrón es otro: **no hay `async`, no hay `await`, hay `subscribe`**.
+
+(Si algún día necesitas convertir un Observable en Promise para usar `await`, existe
+`await firstValueFrom(this.http.get(url))`, de `'rxjs'`. Pero **no** es lo que pide el profe.)
+
+### 15.4 `subscribe` paso a paso
 
 ```ts
-this.http.get<ProductsResponse>(this.apiUrl)
+this.productService.getProducts()          // ① devuelve un Observable (la receta, aún sin cocinar)
+  .subscribe({                             // ② me suscribo → AHORA se envía la petición
+    next: (response) => {                  // ③ esta función se ejecuta cuando LLEGA la respuesta
+      this.products.set(response.products);
+    },
+    error: (err) => {                      // ④ esta, si FALLA (sin internet, 404, 500...)
+      console.error(err);
+    },
+    complete: () => {                      // ⑤ (opcional) cuando el Observable termina
+      console.log('terminado');
+    }
+  });
+console.log('Esto sale ANTES que los productos');   // ⑥
 ```
 
-Lo que va entre `< >` es un **genérico** (como en Java `List<String>`): le dices a TypeScript
-**qué forma tendrá la respuesta**, para que te autocomplete `response.products` y te avise si te
-equivocas. Ojo: **no comprueba** que el servidor de verdad mande eso; es una promesa tuya.
+Lo que le pasas a `subscribe` es un **objeto** `{ }` con hasta tres funciones flecha:
 
-### 15.7 `fetch` vs `HttpClient`
+| Clave | Cuándo la llama RxJS | Equivale en Promise a… |
+|---|---|---|
+| `next` | Cada vez que llega un valor (en HTTP: una vez, con la respuesta) | `.then(...)` / el resultado del `await` |
+| `error` | Si algo falla | `.catch(...)` / el `catch` del `try` |
+| `complete` | Cuando ya no van a llegar más valores | `.finally(...)` (más o menos) |
+
+**Orden en el tiempo** (igual que con `await`, el programa no se bloquea):
+
+```
+① se prepara el Observable
+② subscribe → sale la petición hacia dummyjson.com
+⑥ "Esto sale ANTES que los productos"     ← el código sigue sin esperar
+   ... (unos milisegundos después) ...
+③ next: llega la respuesta → se guardan los productos → la tabla se pinta
+⑤ complete
+```
+
+Tú **no esperas** a los datos: dejas preparado **qué hacer cuando lleguen** (la función `next`), y
+RxJS la llama él solo en su momento. (Fíjate que esto es la idea de *callback* de la sección 4:
+le pasas una función a otro para que la llame más tarde. Por eso merecía la pena entenderlo).
+
+### 15.5 La misma tarea de tres formas (compáralas)
+
+Objetivo: cargar los productos de dummyjson en la página.
+
+**A) Lo que hacíamos: `fetch` + `async/await` (Promise)**
+
+```ts
+// servicio
+async getProducts(): Promise<ProductsResponse> {
+  const response = await fetch('https://dummyjson.com/products');
+  return await response.json();
+}
+
+// página
+async ngOnInit() {
+  const response = await this.productService.getProducts();
+  this.products.set(response.products);
+}
+```
+
+**B) Lo que pide el profe: `HttpClient` + `subscribe` (Observable)**
+
+```ts
+// servicio: SIN async, SIN await, SIN .json()
+getProducts(): Observable<ProductsResponse> {
+  return this.http.get<ProductsResponse>('https://dummyjson.com/products');
+}
+
+// página: SIN async, SIN await
+ngOnInit() {
+  this.productService.getProducts().subscribe({
+    next: (response) => this.products.set(response.products),
+    error: (err) => console.error(err)
+  });
+}
+```
+
+**C) La más corta: `HttpClient` + pipe `async` en el HTML (Observable)**
+
+```ts
+// página: ni siquiera hay subscribe
+products$ = this.productService.getProducts();
+```
+
+```html
+@if (products$ | async; as response) {
+  @for (product of response.products; track product.id) { <p>{{ product.title }}</p> }
+}
+```
+
+| | A) fetch | B) subscribe | C) pipe async |
+|---|---|---|---|
+| `async` / `await` | Sí | **No** | **No** |
+| Convertir a JSON | A mano (`.json()`) | Automático | Automático |
+| Dónde se recibe el dato | Después del `await` | En `next:` | En el HTML |
+| ¿Necesita signal en Angular 22? | Sí | Sí | No (el pipe avisa solo) |
+| Errores | `try/catch` | `error:` | (más avanzado: `catchError`) |
+
+**B es la que usa la actividad guiada.** C es la que usa el dossier (sección 17). A ya no la usaremos
+para APIs.
+
+### 15.6 El servicio, línea a línea
+
+```ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ProductsResponse } from '../models/product.model';
+
+@Injectable({ providedIn: 'root' })
+export class ProductService {
+  private http = inject(HttpClient);                        // DI: pido el HttpClient de Angular
+  private apiUrl = 'https://dummyjson.com/products';
+
+  getProducts(): Observable<ProductsResponse> {             // devuelve "una receta que dará un ProductsResponse"
+    return this.http.get<ProductsResponse>(this.apiUrl);    // prepara un GET; NO lo envía
+  }
+}
+```
+
+- **`this.http.get(url)`** = "prepara una petición GET a esta URL". Existen también `.post()`,
+  `.put()`, `.delete()` para los otros verbos HTTP (sección 14.5).
+- **`<ProductsResponse>`** después de `get` es un **genérico** (como `List<String>` en Java): le
+  dice a TypeScript qué forma tendrá la respuesta, para que luego te autocomplete
+  `response.products`. Ojo: es una promesa **tuya**; TypeScript no comprueba lo que manda de verdad
+  el servidor.
+- **`Observable<ProductsResponse>`** como tipo de retorno = "devuelvo un Observable que, cuando
+  alguien se suscriba, emitirá un `ProductsResponse`".
+- El servicio **no se suscribe**: devuelve la receta y **quien la use** (la página) decide cuándo
+  cocinarla.
+
+### 15.7 Activar `HttpClient`: `provideHttpClient()`
+
+Para que `inject(HttpClient)` funcione, Angular tiene que tener registrado el "proveedor" de
+`HttpClient`. Se hace en la configuración global:
+
+```ts
+providers: [
+  // ...
+  provideHttpClient(),      // de '@angular/common/http'
+]
+```
+
+En tu plantilla de Ionic eso va en **`main.ts`** (ver 16.3). En Angular 22 funciona incluso sin
+ponerlo, pero ponlo siempre: lo pide la checklist del profe.
+
+### 15.8 La convención del `$`
+
+Cuando una variable guarda un Observable, por costumbre se le pone **un `$` al final**:
+`users$`, `products$`. No hace nada especial: solo avisa a quien lee el código de que
+"esto es un Observable, hay que suscribirse para tener el dato".
+
+### 15.9 El pipe `async` (forma C)
+
+En vez de suscribirte tú en el `.ts`, dejas que **la plantilla se suscriba sola**:
+
+```html
+@if (users$ | async; as users) {        <!-- ① se suscribe ② espera ③ guarda el resultado en "users" -->
+  @for (user of users; track user.id) { <p>{{ user.name }}</p> }
+} @else {
+  <p>Cargando...</p>                     <!-- mientras no ha llegado nada -->
+}
+```
+
+- `users$ | async` = "suscríbete a `users$` y dame el último valor que haya llegado" (mientras no
+  llega nada, vale `null`, y por eso entra en el `@else`).
+- `as users` = "a ese valor llámalo `users` dentro del bloque".
+- Ventajas: no escribes `subscribe`, Angular se **desuscribe solo** al salir de la página (evita
+  *memory leaks*, fugas de memoria) y avisa él mismo a Angular para repintar (no necesita signals).
+- Hay que importar `AsyncPipe` (de `'@angular/common'`) en el componente.
+
+### 15.10 Errores típicos con Observables
+
+| Error | Qué pasa | Solución |
+|---|---|---|
+| No suscribirse | La petición no se envía; la pantalla no muestra nada; en F12 → *Network* no aparece | Añadir `.subscribe({...})` o usar el pipe `async` |
+| Usar `await` con un Observable | `datos` es el Observable, no los productos | Usar `subscribe` |
+| Intentar **devolver** el dato desde dentro de `subscribe` | El `return` dentro de `next` no sale de tu método: se pierde | Guardarlo en una variable/signal dentro de `next` |
+| Variable normal dentro de `next` (Angular 22) | Se queda en "Cargando" para siempre (comprobado) | Usar **signals** y `.set()` |
+| Olvidar `response.products` | Intentas hacer `@for` sobre un objeto, no un array | Coger la lista de dentro del objeto envoltorio |
+
+El tercero merece un ejemplo, porque es muy común:
+
+```ts
+// ❌ MAL: este método no devuelve los productos
+getLista() {
+  this.productService.getProducts().subscribe({
+    next: (r) => { return r.products; }     // este return es de la función flecha, no de getLista
+  });
+}                                            // getLista termina sin devolver nada
+
+// ✅ BIEN: guardarlo donde la plantilla lo pueda leer
+loadProducts() {
+  this.productService.getProducts().subscribe({
+    next: (r) => this.products.set(r.products)
+  });
+}
+```
+
+### 15.11 Tabla final: Promise vs Observable
+
+| | **Promise** | **Observable** |
+|---|---|---|
+| De dónde viene | JavaScript estándar | Librería **RxJS** (viene con Angular) |
+| Quién lo usa | `fetch`, funciones `async` | `HttpClient` de Angular |
+| Cuántos valores | **Uno** | **Cero, uno o muchos** a lo largo del tiempo |
+| ¿Empieza solo? | **Sí**, en cuanto lo creas | **No**, hasta que te suscribes (*lazy*) |
+| Recibir el valor | `await` o `.then(...)` | `.subscribe({ next })` o pipe `async` |
+| Recibir el error | `try/catch` o `.catch(...)` | `error:` en el subscribe |
+| ¿Se puede cancelar? | No | Sí (`unsubscribe()`) |
+| Tipo en TypeScript | `Promise<Product[]>` | `Observable<Product[]>` |
+| Analogía | El avisador del restaurante | La suscripción a un canal de YouTube |
+
+### 15.12 `fetch` vs `HttpClient`
 
 | | `fetch` | `HttpClient` |
 |---|---|---|
 | Qué es | Función del navegador | Servicio de Angular (se **inyecta**) |
 | Devuelve | Promise | Observable |
 | Convertir a JSON | A mano: `await response.json()` | Automático |
-| Errores 404/500 | **No** los trata como error (hay que mirar `response.ok`) | **Sí**, van al `error:` |
-| Extras | — | Interceptores (p. ej. añadir el token a todas las peticiones), tipado con `<T>` |
+| Errores 404/500 | **No** cuentan como error (hay que mirar `response.ok`) | **Sí**, van a `error:` |
+| Extras | — | Tipado con `<T>`, interceptores (p. ej. añadir un token a todas las peticiones) |
+
+### 15.13 Para decirlo en clase
+
+> *"Con `HttpClient`, Angular no devuelve una Promise sino un Observable de RxJS. Un Observable no
+> hace la petición hasta que alguien se suscribe, y puede emitir varios valores. Por eso no se usa
+> `await`: se llama a `subscribe` pasándole una función `next` para cuando llegan los datos y otra
+> `error` para cuando falla. Otra opción es usar el pipe `async` en la plantilla, que se suscribe y
+> se desuscribe solo."*
 
 ---
 
