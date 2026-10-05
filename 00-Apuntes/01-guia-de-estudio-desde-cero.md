@@ -20,6 +20,15 @@
 12. [Ejercicios para practicar (con soluciones)](#12-ejercicios-para-practicar-con-soluciones)
 13. [Chuleta para mañana en clase](#13-chuleta-para-mañana-en-clase)
 
+**Parte 2 — Consumo de APIs REST** (clase del 05-10-2026)
+
+14. [¿Qué es una API y qué es REST?](#14-qué-es-una-api-y-qué-es-rest)
+15. [Promise vs Observable (`HttpClient` y RxJS)](#15-promise-vs-observable-httpclient-y-rxjs)
+16. [Actividad guiada: `dam2-productos` (dummyjson) línea a línea](#16-actividad-guiada-dam2-productos-dummyjson-línea-a-línea)
+17. [El ejemplo del dossier: directorio de usuarios con `async` pipe](#17-el-ejemplo-del-dossier-directorio-de-usuarios-con-async-pipe)
+18. [Ejercicio propuesto: Maestro-Detalle con Rick and Morty](#18-ejercicio-propuesto-maestro-detalle-con-la-api-de-rick-and-morty)
+19. [Preguntas de repaso de la Parte 2](#19-preguntas-de-repaso-de-la-parte-2)
+
 ---
 
 ## 1. El mapa: de qué va la asignatura
@@ -1439,3 +1448,765 @@ Si el profe pregunta, esto es lo que tienes que saber decir **con tus palabras**
 **Siguiente en la práctica (lo que probablemente toque mañana):** punto 10 del PDF,
 geolocalización en la página Nosotros (`npm install @capacitor/geolocation`, un
 `GeolocationService` y la fórmula de Haversine).
+
+---
+
+# PARTE 2 — Consumo de APIs REST
+
+> Material de clase del 05-10-2026: dossier **"Consumo de APIs en arquitecturas frontend con
+> Ionic y Angular"** y **"Actividad guiada — Ionic + Angular Standalone: consumo de API REST"**.
+>
+> **Antes de esta parte** tienes que tener claro el [punto 3.10](#310-asincronía-promise-async-y-await)
+> (Promise, `async/await`) y el [punto 4](#4-práctica-paradigmas-asíncronos-de-javascript-paradigmas-js).
+> Aquí aparece una cosa nueva que se parece mucho: el **Observable**.
+
+---
+
+## 14. ¿Qué es una API y qué es REST?
+
+### 14.1 API
+
+**API** (*Application Programming Interface*) = un conjunto de reglas para que **dos programas
+se hablen** sin que uno tenga que saber cómo está hecho el otro por dentro.
+
+**Analogía del restaurante (otra vez):** tú (la app) no entras en la cocina (la base de datos).
+Hablas con el **camarero** (la API): le pides algo de la carta (una petición), él va a cocina y te
+trae el plato (la respuesta). No sabes ni te importa cómo se cocina.
+
+```
+ App Ionic (cliente)  ── petición ──▶  API (servidor)  ──▶  Base de datos
+  "dame los productos"                  comprueba, busca     (MySQL, MongoDB...)
+                      ◀── respuesta ──  devuelve JSON
+```
+
+- **Cliente** (*frontend*): lo que ve el usuario. Tu app Ionic.
+- **Servidor** (*backend*): el programa que tiene los datos. Puede estar hecho en Node, Spring
+  (Java), Django (Python)…
+- Hasta ahora tus datos estaban en un JSON **dentro** de la app (`assets/data/products.json`).
+  Ahora vienen de un **servidor de internet**.
+
+### 14.2 Por qué se separa frontend y backend (lo que pide el dossier)
+
+| Ventaja | Qué significa en cristiano |
+|---|---|
+| **Desacoplamiento** (*separation of concerns*) | El frontend y el backend se programan, se publican y se actualizan por separado. |
+| **Reutilización omnicanal** | La misma API sirve a la web, a la app móvil y a otros programas. |
+| **Escalabilidad** | Si hay mucha gente, se refuerza el servidor sin tocar la app. |
+| **Seguridad** | Las contraseñas de la base de datos y la lógica importante se quedan en el servidor; la app solo ve lo que la API le deja ver (con tokens como **JWT** u **OAuth**). |
+
+### 14.3 Tipos de API
+
+| Tipo | Cómo es | Dónde se usa |
+|---|---|---|
+| **REST** | Usa HTTP normal: URLs + verbos (GET, POST…) + JSON. | Lo estándar hoy. **La que usamos.** |
+| **GraphQL** | Una sola URL; el cliente pide **exactamente** los campos que quiere. Evita el *over-fetching* (recibir datos de más) y el *under-fetching* (recibir de menos y tener que pedir otra vez). | Creada por Facebook. |
+| **SOAP** | Basada en XML, muy estricta y pesada. | Bancos, sistemas antiguos (*legacy*). |
+| **gRPC** | Muy rápida, binaria (HTTP/2 + Protocol Buffers). | Comunicación entre microservicios (Google). |
+
+### 14.4 REST: las 4 reglas
+
+Una API es **REST** si cumple estas restricciones:
+
+1. **Cliente-servidor**: el cliente se ocupa de la interfaz; el servidor, de los datos.
+2. **Stateless (sin estado)**: cada petición lleva **toda** la información necesaria. El servidor no
+   "se acuerda" de ti entre una petición y otra (por eso, si hay login, el token se manda en
+   **cada** petición).
+3. **Caché**: las respuestas dicen si se pueden guardar temporalmente para no volver a pedirlas.
+4. **Interfaz uniforme**: cada cosa (**recurso**) tiene su URL (`/api/usuarios/123`) y se
+   manipula con los verbos HTTP estándar, devolviendo JSON (o XML).
+
+**REST vs RESTful:** *REST* es el **conjunto de reglas** (el estilo, definido por Roy Fielding).
+*RESTful* es el **adjetivo** para una API concreta que las cumple: "he hecho una API RESTful en Node".
+
+### 14.5 HTTP en lo justo
+
+**Anatomía de una URL de API:**
+
+```
+https://dummyjson.com/products/1?select=title,price
+└─┬─┘   └────┬─────┘ └───┬────┘ └┬┘ └──────┬──────┘
+protocolo  dominio     recurso   id   parámetros (query string)
+```
+
+Cada URL a la que se le pueden hacer peticiones se llama **endpoint**.
+
+**Verbos HTTP** (qué quieres hacer) — se corresponden con el **CRUD**:
+
+| Verbo | CRUD | Ejemplo |
+|---|---|---|
+| **GET** | Read (leer) | `GET /products` → lista; `GET /products/1` → el producto 1 |
+| **POST** | Create (crear) | `POST /products` con un JSON en el cuerpo → crea uno nuevo |
+| **PUT** / **PATCH** | Update (modificar) | `PUT /products/1` → cambia el producto 1 entero / `PATCH` solo algunos campos |
+| **DELETE** | Delete (borrar) | `DELETE /products/1` |
+
+**Códigos de estado** (cómo ha ido): `200` OK · `201` creado · `400` petición mal hecha ·
+`401` no autenticado · `403` prohibido · `404` no existe · `500` error del servidor.
+Regla fácil: **2xx bien, 4xx culpa tuya (cliente), 5xx culpa del servidor**.
+
+> **Pruébalo:** abre <https://dummyjson.com/products> en el navegador. Lo que ves es la
+> respuesta JSON de un GET. Prueba también `https://dummyjson.com/products/1` y
+> `https://dummyjson.com/products/9999` (un 404).
+
+---
+
+## 15. Promise vs Observable (`HttpClient` y RxJS)
+
+Hasta ahora pedíamos datos con **`fetch`**, que devuelve una **Promise**. Angular tiene su propia
+herramienta para hacer peticiones: **`HttpClient`**, que devuelve un **Observable**.
+
+### 15.1 ¿Qué es un Observable?
+
+Viene de la librería **RxJS** (ya está instalada en todo proyecto Angular).
+
+**Analogía:**
+- Una **Promise** es el **avisador del restaurante**: vibra **una vez** con **un** resultado y se acabó.
+- Un **Observable** es como **suscribirte a un canal de YouTube**: no recibes nada hasta que te
+  **suscribes**, y a partir de ahí te pueden llegar **varios** avisos con el tiempo (vídeos nuevos),
+  un aviso de error, o un aviso de "el canal ha terminado".
+
+En una petición HTTP, el Observable manda **un solo** valor (la respuesta) y termina, así que en
+la práctica se usa casi igual que una Promise. La diferencia importante es la siguiente:
+
+> **Un Observable no hace nada hasta que alguien se suscribe.** Si llamas a
+> `this.http.get(url)` y no te suscribes, **la petición ni siquiera se envía**.
+
+### 15.2 Suscribirse: `.subscribe({ next, error })`
+
+```ts
+this.productService.getProducts()          // devuelve un Observable (todavía no ha pedido nada)
+  .subscribe({                             // me suscribo → AHORA se hace la petición
+    next: (response) => {                  // cuando llegue un valor (la respuesta)
+      console.log(response.products);
+    },
+    error: (err) => {                      // si falla (sin red, 404, 500...)
+      console.error(err);
+    },
+    complete: () => {                      // (opcional) cuando el Observable termina
+      console.log('terminado');
+    }
+  });
+```
+
+Es el equivalente a `.then()` (`next`) y `.catch()` (`error`) de las Promises.
+
+### 15.3 Tabla comparativa
+
+| | **Promise** | **Observable** |
+|---|---|---|
+| De dónde viene | JavaScript estándar | Librería RxJS |
+| Quién lo usa | `fetch`, funciones `async` | `HttpClient` de Angular |
+| Cuántos valores | **Uno** | **Cero, uno o muchos** a lo largo del tiempo |
+| ¿Empieza solo? | **Sí**, en cuanto lo creas | **No**, hasta que te suscribes (*lazy*) |
+| Recibir el valor | `.then(...)` o `await` | `.subscribe({ next })` o pipe `async` |
+| Recibir el error | `.catch(...)` o `try/catch` | `error:` en el subscribe, o `catchError` |
+| ¿Se puede cancelar? | No | Sí (`unsubscribe()`) |
+| Tipo en TypeScript | `Promise<Product[]>` | `Observable<Product[]>` |
+
+Si alguna vez quieres usar `await` con un Observable: `await firstValueFrom(observable)` (de `'rxjs'`).
+
+### 15.4 La convención del `$`
+
+Cuando una variable guarda un Observable, por costumbre se le pone **un `$` al final**:
+`users$`, `products$`. No hace nada especial; solo avisa al que lee: "esto es un Observable".
+
+### 15.5 El pipe `async`
+
+En vez de suscribirte tú en el `.ts`, puedes dejar que **la plantilla se suscriba sola**:
+
+```html
+@if (users$ | async; as users) {        <!-- se suscribe, espera y guarda el resultado en "users" -->
+  @for (user of users; track user.id) { <p>{{ user.name }}</p> }
+}
+```
+
+Ventajas: no escribes `subscribe`, y cuando sales de la página Angular **se desuscribe solo**
+(evita *memory leaks*, fugas de memoria). Hay que importar `AsyncPipe` (o `CommonModule`).
+
+### 15.6 Genéricos: `get<T>`
+
+```ts
+this.http.get<ProductsResponse>(this.apiUrl)
+```
+
+Lo que va entre `< >` es un **genérico** (como en Java `List<String>`): le dices a TypeScript
+**qué forma tendrá la respuesta**, para que te autocomplete `response.products` y te avise si te
+equivocas. Ojo: **no comprueba** que el servidor de verdad mande eso; es una promesa tuya.
+
+### 15.7 `fetch` vs `HttpClient`
+
+| | `fetch` | `HttpClient` |
+|---|---|---|
+| Qué es | Función del navegador | Servicio de Angular (se **inyecta**) |
+| Devuelve | Promise | Observable |
+| Convertir a JSON | A mano: `await response.json()` | Automático |
+| Errores 404/500 | **No** los trata como error (hay que mirar `response.ok`) | **Sí**, van al `error:` |
+| Extras | — | Interceptores (p. ej. añadir el token a todas las peticiones), tipado con `<T>` |
+
+---
+
+## 16. Actividad guiada: `dam2-productos` (dummyjson) línea a línea
+
+**Objetivo:** app Ionic + Angular standalone que pide los productos a
+`https://dummyjson.com/products`, los muestra en una **tabla**, tiene dos rutas (`/inicio` y
+`/productos`), se sube a GitHub en una rama **`desarrollo`** y se publica en **Vercel**.
+
+Es **la misma idea que tu Corporate App**, pero los datos vienen de una API de internet en vez de
+un JSON local, y se usa `HttpClient` en vez de `fetch`.
+
+```
+src/app/
+├── models/product.model.ts          → interfaces Product y ProductsResponse
+├── services/product.service.ts      → pide los datos con HttpClient
+├── pages/inicio/inicio.page.ts      → portada con un botón
+├── pages/productos/productos.page.ts→ tabla con los productos
+├── app.component.ts                 → raíz con <ion-router-outlet>
+├── app.routes.ts                    → rutas
+└── app.config.ts                    → configuración global (provideHttpClient)
+```
+
+### ⚠️ 16.0 Tres avisos antes de copiar el PDF (comprobados con tu versión)
+
+Tu Ionic/Angular es más nuevo que el del PDF. He probado el código del PDF y pasa esto:
+
+| En el PDF pone | En tu versión (Ionic 9 + Angular 22) | Qué hacer |
+|---|---|---|
+| `from '@ionic/angular/standalone'` | **No existe** en Ionic 9 → error al compilar. | Importar de **`'@ionic/angular'`** (como en tu Corporate App). |
+| `products: Product[] = []`, `loading = false` y se cambian dentro de `subscribe` | Angular 22 no usa zone.js → **la página se queda en "Cargando" para siempre** (comprobado). | Usar **signals**: `products = signal<Product[]>([])` y `.set(...)`. Ver versión corregida en 16.7. |
+| `app.config.ts` con `provideHttpClient()` | La plantilla de Ionic **no trae** `app.config.ts`: los *providers* están en `main.ts`. | Añadir `provideHttpClient()` a los `providers` de `main.ts` (o crear `app.config.ts`, ver 16.3). |
+
+### 16.1 Crear el proyecto
+
+```powershell
+npm install -g @ionic/cli                          # actualizar la CLI de Ionic (global)
+ionic start dam2-productos blank --type=angular    # crear proyecto en blanco
+cd dam2-productos
+ionic serve                                        # comprobar en http://localhost:8100
+```
+
+### 16.2 Standalone vs módulos (lo que explica el PDF)
+
+```
+Angular "tradicional"                Angular standalone (el nuestro)
+AppModule                            Application
+ ├── declarations (componentes)       ├── app.config.ts  (providers globales)
+ ├── imports (otros módulos)          ├── app.routes.ts  (rutas)
+ └── providers (servicios)            └── cada componente con sus propios imports
+```
+
+Antes, todo se "apuntaba" en un fichero central `AppModule` (`@NgModule`). Ahora **cada
+componente declara lo que usa** en su `imports: [...]`, y lo global va en `app.config.ts` (o en
+`main.ts`). **Checklist del profe:** no debe existir `app.module.ts` ni `@NgModule`.
+
+Sobre `imports: [CommonModule, IonicModule]` que aparece en el PDF: funciona, pero **mete todo**
+Ionic y todo `CommonModule`. Lo moderno (y lo que pide luego el propio PDF) es importar **solo lo
+que usas**: `IonHeader`, `IonButton`, `CurrencyPipe`…
+
+### 16.3 Activar `HttpClient`
+
+Lo que pone el PDF (`src/app/app.config.ts`):
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {   // objeto de configuración de la app
+  providers: [
+    provideHttpClient()                         // "registra HttpClient para poder inyectarlo"
+  ]
+};
+```
+
+En **tu** plantilla Ionic los providers están en **`main.ts`**, así que lo más simple es añadirlo ahí:
+
+```ts
+import { provideHttpClient } from '@angular/common/http';   // ← añadir este import
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicAngular(),
+    provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideHttpClient(),                                     // ← y esta línea
+  ],
+});
+```
+
+> Nota: en Angular 22 `HttpClient` ya funciona aunque no pongas `provideHttpClient()` (lo he
+> probado), pero **ponlo igualmente**: lo pide la checklist y es donde se configuran cosas como
+> los interceptores.
+
+Es **inyección de dependencias** otra vez (sección 5.9): `provideHttpClient()` registra el
+"proveedor" de `HttpClient` en el inyector raíz, y luego el servicio lo pide con `inject(HttpClient)`.
+
+### 16.4 El modelo: `models/product.model.ts`
+
+```ts
+export interface Product {
+  id: number;
+  title: string;                // nombre del producto
+  description: string;
+  category: string;
+  price: number;
+  discountPercentage: number;   // % de descuento
+  rating: number;               // valoración (0-5)
+  stock: number;                // unidades disponibles
+  brand: string;                // marca (algunos productos NO la traen)
+  thumbnail: string;            // URL de la imagen pequeña
+}
+
+export interface ProductsResponse {
+  products: Product[];          // la lista de productos
+  total: number;                // cuántos productos hay en total en la API (194)
+  skip: number;                 // cuántos se ha saltado (para paginar)
+  limit: number;                // cuántos devuelve por petición (30 por defecto)
+}
+```
+
+**¿Por qué dos interfaces?** Porque la API **no devuelve directamente un array**, sino un objeto
+que **envuelve** el array (abre <https://dummyjson.com/products> y lo verás):
+
+```json
+{
+  "products": [ { "id": 1, "title": "Essence Mascara Lash Princess", ... }, ... ],
+  "total": 194,
+  "skip": 0,
+  "limit": 30
+}
+```
+
+Por eso luego hay que coger **`response.products`**. Los nombres de los campos de la interface
+tienen que ser **exactamente** los del JSON (en inglés, como los manda la API). La API manda más
+campos de los que pone la interface (`tags`, `reviews`, `images`…) y no pasa nada: la interface
+solo describe los que vamos a usar.
+
+### 16.5 El servicio: `services/product.service.ts`
+
+```powershell
+ionic generate service services/product
+```
+
+```ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';       // el cliente HTTP de Angular
+import { Observable } from 'rxjs';                         // el tipo Observable
+import { ProductsResponse } from '../models/product.model';
+
+@Injectable({
+  providedIn: 'root'                                       // un servicio para toda la app
+})
+export class ProductService {
+
+  private http = inject(HttpClient);                       // DI con inject(): "dame un HttpClient"
+
+  private apiUrl = 'https://dummyjson.com/products';       // el endpoint
+
+  getProducts(): Observable<ProductsResponse> {            // devuelve un Observable (aún no pide nada)
+    return this.http.get<ProductsResponse>(this.apiUrl);   // prepara un GET a la URL
+  }
+}
+```
+
+- `inject(HttpClient)` = lo mismo que `constructor(private http: HttpClient) {}`. El PDF lo usa para
+  enseñarte `inject()` (lo viste en la sección 5.9).
+- Fíjate: **no hay `async` ni `await`**. El servicio devuelve el Observable "sin abrir", y quien lo
+  use se suscribirá.
+- **Regla del dossier:** las peticiones HTTP van **siempre en un servicio**, nunca directamente en
+  la página.
+
+### 16.6 Rutas: `app.routes.ts`
+
+```ts
+export const routes: Routes = [
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },            // / → /inicio
+  { path: 'inicio', loadComponent: () => import('./pages/inicio/inicio.page').then(m => m.InicioPage) },
+  { path: 'productos', loadComponent: () => import('./pages/productos/productos.page').then(m => m.ProductosPage) },
+  { path: '**', redirectTo: 'inicio' }                              // cualquier otra URL → /inicio
+];
+```
+
+Lo nuevo es **`'**'`** (comodín, *wildcard*): significa "cualquier ruta que no coincida con las
+anteriores". Sirve para que una URL inventada (`/patata`) no deje la pantalla en blanco. **Tiene que
+ir la última**, porque Angular mira las rutas de arriba abajo y se queda con la primera que encaje.
+
+### 16.7 La página Productos (versión corregida para tu Angular)
+
+**`productos.page.ts`**
+
+```ts
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';                     // para | currency
+import {
+  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
+  IonSpinner, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
+} from '@ionic/angular';                                            // ← sin /standalone
+import { Product, ProductsResponse } from '../../models/product.model';
+import { ProductService } from '../../services/product.service';
+
+@Component({
+  selector: 'app-productos',
+  templateUrl: './productos.page.html',
+  styleUrls: ['./productos.page.scss'],
+  standalone: true,
+  imports: [
+    CurrencyPipe,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
+    IonSpinner, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
+  ],
+})
+export class ProductosPage implements OnInit {
+
+  private productService = inject(ProductService);   // DI
+
+  products = signal<Product[]>([]);   // la lista          (PDF: products: Product[] = [])
+  total = signal(0);                  // total en la API   (PDF: total = 0)
+  loading = signal(false);            // ¿cargando?        (PDF: loading = false)
+  error = signal('');                 // mensaje de error  (PDF: error = '')
+
+  ngOnInit(): void {                  // void = no devuelve nada
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.loading.set(true);           // enseña el spinner
+    this.error.set('');               // borra errores anteriores (por si es un "Reintentar")
+
+    this.productService.getProducts() // Observable (aún sin pedir)
+      .subscribe({                    // ← aquí se hace la petición de verdad
+        next: (response: ProductsResponse) => {    // llegó bien
+          this.products.set(response.products);    // el array está DENTRO de response
+          this.total.set(response.total);
+          this.loading.set(false);
+        },
+        error: (error) => {                        // falló (sin internet, 404, 500...)
+          console.error(error);
+          this.error.set('No se han podido cargar los productos.');
+          this.loading.set(false);
+        }
+      });
+  }
+}
+```
+
+La página tiene **tres estados**: *cargando*, *error* y *correcto*. Es lo que pide la checklist
+("Estado de carga / correcto / error / botón de reintento").
+
+**`productos.page.html`** (con `@if` / `@for`, la sintaxis que recomienda el profe)
+
+```html
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/inicio"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Productos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">           <!-- ion-padding: margen interior de Ionic -->
+  <h1>Listado de productos</h1>
+
+  @if (loading()) {                          <!-- ESTADO 1: cargando -->
+    <div class="loading">
+      <ion-spinner></ion-spinner>            <!-- ruedecita girando -->
+      <p>Cargando productos...</p>
+    </div>
+  }
+
+  @if (error()) {                            <!-- ESTADO 2: error (un texto no vacío cuenta como true) -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Error</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ error() }}</p>
+        <ion-button (click)="loadProducts()">Reintentar</ion-button>   <!-- event binding: vuelve a pedir -->
+      </ion-card-content>
+    </ion-card>
+  }
+
+  @if (!loading() && !error()) {             <!-- ESTADO 3: correcto. && = Y, ! = NO -->
+    <p>Productos cargados: <strong>{{ products().length }}</strong> de {{ total() }}</p>
+
+    <div class="table-container">
+      <table>                                <!-- tabla HTML normal -->
+        <thead>                              <!-- cabecera de la tabla -->
+          <tr>                               <!-- tr = fila (table row) -->
+            <th>ID</th>                      <!-- th = celda de cabecera -->
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Marca</th>
+            <th>Precio</th>
+            <th>Valoración</th>
+            <th>Stock</th>
+          </tr>
+        </thead>
+        <tbody>                              <!-- cuerpo de la tabla -->
+          @for (product of products(); track product.id) {
+            <tr>
+              <td>{{ product.id }}</td>      <!-- td = celda normal (table data) -->
+              <td>
+                <div class="product">
+                  <img [src]="product.thumbnail" [alt]="product.title">
+                  <span>{{ product.title }}</span>
+                </div>
+              </td>
+              <td>{{ product.category }}</td>
+              <td>{{ product.brand || 'Sin marca' }}</td>      <!-- si no hay marca, pone 'Sin marca' -->
+              <td>{{ product.price | currency:'EUR' }}</td>    <!-- pipe de moneda -->
+              <td>⭐ {{ product.rating }}</td>
+              <td>{{ product.stock }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</ion-content>
+```
+
+Cosas nuevas:
+- **`a || b`** = "si `a` está vacío / no existe, usa `b`". Algunos productos de dummyjson no traen
+  `brand`, y así no sale la celda vacía.
+- **`<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, `<td>`**: tabla HTML de toda la vida (en la
+  Corporate App usamos el `ion-grid` de Ionic, que es otra forma de hacer tablas).
+- **`| currency:'EUR'`** necesita `CurrencyPipe` en los `imports`. Sale como `€9.99` (formato inglés
+  por defecto).
+- Si usas `@if`/`@for`, **no hace falta `CommonModule`**. Si usas `*ngIf`/`*ngFor`, sí (o `NgIf`/`NgFor`).
+
+**`productos.page.scss`**
+
+```scss
+.loading { text-align: center; padding: 40px; }        /* spinner centrado con aire */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;              /* si la tabla no cabe (móvil), se hace scroll horizontal */
+}
+
+table {
+  width: 100%;
+  min-width: 900px;              /* nunca más estrecha de 900px → en móvil, scroll */
+  border-collapse: collapse;     /* bordes de celdas pegados (sin doble línea) */
+}
+
+th, td {                         /* a la vez para th y td */
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background: var(--ion-color-primary);   /* color principal del tema de Ionic (azul) */
+  color: white;
+}
+
+.product { display: flex; align-items: center; gap: 10px; }   /* imagen y nombre en fila, separados 10px */
+.product img { width: 50px; height: 50px; object-fit: contain; }  /* imagen 50x50 sin deformarse */
+```
+
+- `var(--ion-color-primary)`: una **variable CSS** de Ionic. Si cambias el color primario del
+  tema, cambia en toda la app.
+- `display: flex`: pone los hijos uno al lado del otro.
+
+### 16.8 Página Inicio y componente raíz
+
+**`inicio.page.ts`** — solo declara lo que usa su HTML:
+
+```ts
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/angular';
+
+@Component({
+  selector: 'app-inicio',
+  templateUrl: './inicio.page.html',
+  styleUrls: ['./inicio.page.scss'],
+  standalone: true,
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton, RouterLink],
+})
+export class InicioPage {}
+```
+
+**`inicio.page.html`**
+
+```html
+<ion-header>
+  <ion-toolbar><ion-title>Inicio</ion-title></ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <h1>DAM2 - API REST</h1>
+  <p>Aplicación Ionic + Angular Standalone para consumir una API REST.</p>
+  <ion-button routerLink="/productos">Ver productos</ion-button>   <!-- necesita RouterLink -->
+</ion-content>
+```
+
+**`app.component.ts`** + **`.html`**: igual que en la Corporate App (sección 8.4):
+`imports: [IonApp, IonRouterOutlet]` y `<ion-app><ion-router-outlet></ion-router-outlet></ion-app>`.
+
+### 16.9 GitHub con rama `desarrollo`
+
+```powershell
+git init                                           # convierte la carpeta en repositorio
+git add .
+git commit -m "Creación inicial de aplicación Ionic Standalone"
+git checkout -b desarrollo                         # crea la rama "desarrollo" y se cambia a ella
+git branch --show-current                          # comprobar: debe decir "desarrollo"
+git remote add origin https://github.com/JorgeGonzalezDI/dam2-productos.git   # conectar con GitHub
+git push -u origin desarrollo                      # subir la rama desarrollo
+```
+
+- `git checkout -b nombre` = crear rama **y** cambiarse a ella (`-b` de *branch*).
+- `-u` (*upstream*) en el primer push = "recuerda que esta rama va con `origin/desarrollo`"; los
+  siguientes push son solo `git push`.
+- El profe entrará en GitHub → selector de ramas → **desarrollo**.
+- El PDF pide un repositorio propio `dam2-productos`. Cuando la hagas, decidimos si va en ese
+  repo nuevo (como pide el PDF) o como carpeta `03-...` de tu repo de la asignatura.
+
+### 16.10 Vercel
+
+Add New Project → importar `dam2-productos` → **Production Branch: `desarrollo`** (por defecto
+Vercel usa `main`, hay que cambiarlo) → Deploy. Build `npm run build`, salida `www`, y el
+`vercel.json` con el *rewrite* a `index.html` (sección 8.12).
+
+**Comprobar dos cosas:** que `https://TU-APP.vercel.app/` funciona **y** que
+`https://TU-APP.vercel.app/productos` funciona **recargando la página** (si da 404 → falta el
+`vercel.json`). Y que los productos se cargan en producción (la API es pública, así que sí).
+
+### 16.11 Checklist del profe (resumida)
+
+- **Standalone:** sin `app.module.ts`, imports en cada componente, `provideHttpClient()`.
+- **API:** se consume `dummyjson.com/products`; existen `Product`, `ProductsResponse`, `ProductService`.
+- **Vista:** tabla con ID, nombre, categoría, precio, stock, valoración e imagen.
+- **Navegación:** `/inicio`, `/productos`, `/` → `/inicio`, ruta desconocida → `/inicio`, ir y volver.
+- **Estados:** carga, correcto, error, botón reintentar.
+- **Git/GitHub:** repo, rama `desarrollo`, commits descriptivos.
+- **Vercel:** desplegado desde `desarrollo`, URL funcionando, `/productos` funciona directamente.
+
+---
+
+## 17. El ejemplo del dossier: directorio de usuarios con `async` pipe
+
+El dossier hace lo mismo con usuarios de `https://jsonplaceholder.typicode.com/users` (la API de tu
+práctica `paradigmas-js`), pero usando el **pipe `async`** en lugar de `subscribe`.
+
+**`api.service.ts`** — igual que el `ProductService`, con `getUsers(): Observable<User[]>`. Aquí
+la API sí devuelve **directamente un array**, por eso es `User[]` y no un objeto envoltorio.
+
+**`home.page.ts`**
+
+```ts
+export class HomePage implements OnInit {
+  public users$!: Observable<User[]>;     // $ = es un Observable; ! = "ya le daré valor luego, no te quejes"
+  private apiService = inject(ApiService);
+
+  ngOnInit() { this.fetchData(); }
+
+  fetchData() {
+    this.users$ = this.apiService.getUsers();   // NO se suscribe: guarda el Observable "sin abrir"
+  }
+}
+```
+
+- **`!` después del nombre** (*definite assignment*): TypeScript se queja si declaras una propiedad
+  sin valor inicial; el `!` le dice "tranquilo, se la doy en `ngOnInit`".
+
+**`home.page.html`**
+
+```html
+<ion-list *ngIf="users$ | async as users; else loading">   <!-- se suscribe; mientras no llega → plantilla "loading" -->
+  <ion-item *ngFor="let user of users">
+    <ion-avatar slot="start">                                <!-- imagen redonda a la izquierda -->
+      <img [src]="'https://ui-avatars.com/api/?name=' + user.name" alt="Avatar"/>  <!-- texto + variable -->
+    </ion-avatar>
+    <ion-label>
+      <h2>{{ user.name }}</h2>
+      <p>{{ user.email }}</p>
+      <p><ion-icon name="globe-outline"></ion-icon> {{ user.website }}</p>
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+<ng-template #loading>                                       <!-- plantilla con nombre "loading" -->
+  <ion-list>
+    <ion-item *ngFor="let i of [1,2,3,4,5]">                 <!-- 5 filas falsas -->
+      <ion-avatar slot="start"><ion-skeleton-text animated></ion-skeleton-text></ion-avatar>
+      <ion-label>
+        <h2><ion-skeleton-text animated style="width: 50%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text animated style="width: 80%"></ion-skeleton-text></p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ng-template>
+```
+
+- **`users$ | async as users`**: el pipe `async` se suscribe y el resultado se llama `users` dentro.
+- **`; else loading`** + **`<ng-template #loading>`**: "si todavía no hay datos, pinta la plantilla
+  llamada `loading`". `#loading` es una **referencia de plantilla** (un nombre para ese trozo).
+  Con la sintaxis nueva sería `@if (users$ | async; as users) { ... } @else { ... }`.
+- **`<ion-skeleton-text animated>`**: rectángulos grises animados que imitan el contenido mientras
+  carga (*skeleton loading*), como en YouTube o Instagram.
+- **`'texto' + user.name`** dentro de `[src]`: concatena texto con la variable para formar la URL.
+- Este ejemplo **sí funciona** en tu Angular 22 sin signals, porque el pipe `async` avisa él mismo
+  a Angular de que hay datos nuevos (lo he comprobado).
+- `IonicModule` en los imports del dossier = importar todo Ionic de golpe (forma antigua).
+
+---
+
+## 18. Ejercicio propuesto: Maestro-Detalle con la API de Rick and Morty
+
+Lo propone el dossier. **Maestro-detalle** (*master-detail*) = una pantalla con la **lista**
+(maestro) y, al pulsar un elemento, otra pantalla con **todos sus datos** (detalle). Como la app de
+contactos del móvil.
+
+| Requisito | Qué significa / qué vas a usar |
+|---|---|
+| 1. Interfaces estrictas | Abre <https://rickandmortyapi.com/api/character>. La respuesta es `{ info: {...}, results: [...] }` → interfaces `Character` y `CharacterResponse` (como `Product` y `ProductsResponse`). |
+| 2. `CharacterService` | Dos métodos: `getCharacters()` → `GET /character` y `getCharacter(id)` → `GET /character/{id}` (un solo personaje). |
+| 3. Vista maestra | `<ion-list>` con `<ion-item>` por personaje: `<ion-avatar>` con `image`, `name` y `species`. |
+| 4. Navegación con id | Ruta con **parámetro**: `{ path: 'personaje/:id', loadComponent: ... }`. El `:id` es una variable de la URL. En la lista: `[routerLink]="['/personaje', character.id]"`. |
+| 5. Vista detalle | La página lee el `id` de la URL, llama a `getCharacter(id)` y muestra `origin.name`, `status`, `gender` en un `<ion-card>`. |
+| 6. Errores (avanzado) | Capturar el error (red caída, 404) con `catchError` de RxJS o en el `error:` del subscribe y mostrar un **`<ion-toast>`** (mensajito que aparece abajo y desaparece). |
+
+**Pistas para leer el `id` de la URL:** tu plantilla Ionic ya trae `withComponentInputBinding()` en
+`main.ts`, que permite recibir el parámetro de la ruta directamente como una entrada del componente:
+
+```ts
+import { input } from '@angular/core';
+export class PersonajePage {
+  id = input<string>();          // Angular rellena esto con el :id de la URL ("1", "2"...)
+}
+```
+
+(La forma clásica es inyectar `ActivatedRoute` y leer `route.snapshot.paramMap.get('id')`.)
+
+Cuando lo vayas a hacer, lo montamos paso a paso.
+
+---
+
+## 19. Preguntas de repaso de la Parte 2
+
+1. ¿Qué es una API? ¿Y qué la hace REST?
+2. ¿Qué verbo HTTP usarías para crear un producto? ¿Y para borrarlo?
+3. ¿Qué significa un 404? ¿Y un 500?
+4. ¿Qué diferencia hay entre una Promise y un Observable? (di al menos dos)
+5. Si llamo a `this.http.get(url)` y no hago nada más, ¿se hace la petición?
+6. ¿Por qué el modelo de dummyjson tiene `ProductsResponse` además de `Product`?
+7. ¿Para qué sirve la ruta `'**'` y por qué va la última?
+8. ¿Qué hace `{{ product.brand || 'Sin marca' }}`?
+9. ¿Por qué con Angular 22 hay que usar signals dentro del `subscribe`? ¿Por qué con el pipe `async` no hace falta?
+10. ¿Qué tienes que configurar en Vercel para que publique la rama `desarrollo`?
+
+<details>
+<summary><b>Respuestas</b></summary>
+
+1. Un conjunto de reglas para que dos programas se comuniquen; REST si es cliente-servidor, sin estado, cacheable y con interfaz uniforme (recursos en URLs + verbos HTTP + JSON).
+2. `POST` para crear, `DELETE` para borrar.
+3. 404: el recurso no existe (error del cliente). 500: error interno del servidor.
+4. Promise da un único valor y empieza sola; Observable puede dar varios, no empieza hasta suscribirse y se puede cancelar. Promise es JavaScript estándar; Observable es de RxJS.
+5. No: un Observable no hace nada hasta que alguien se suscribe (con `.subscribe()` o con el pipe `async`).
+6. Porque la API devuelve un objeto que envuelve la lista (`products`, `total`, `skip`, `limit`), no la lista directamente.
+7. Es el comodín: atrapa cualquier URL que no exista y redirige. Va la última porque las rutas se comprueban en orden.
+8. Muestra la marca y, si no tiene, el texto "Sin marca".
+9. Porque sin zone.js Angular no se entera de cambios en propiedades normales hechos dentro de un callback; el signal le avisa con `.set()`. El pipe `async` ya avisa él solo cuando llegan datos.
+10. Production Branch = `desarrollo` (en la importación o en Settings → Git).
+</details>
