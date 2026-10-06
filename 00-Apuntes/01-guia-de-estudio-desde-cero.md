@@ -29,6 +29,11 @@
 18. [Ejercicio propuesto: Maestro-Detalle con Rick and Morty](#18-ejercicio-propuesto-maestro-detalle-con-la-api-de-rick-and-morty)
 19. [Preguntas de repaso de la Parte 2](#19-preguntas-de-repaso-de-la-parte-2)
 
+**Parte 3 — Tu proyecto `dam2-productos` y Git a fondo** (06-10-2026)
+
+20. [Tu proyecto `dam2-productos` (actividad 03) línea a línea](#20-tu-proyecto-dam2-productos-actividad-03-línea-a-línea)
+21. [Git y GitHub a fondo: ramas, comandos y desde dónde lanzarlos](#21-git-y-github-a-fondo-ramas-comandos-y-desde-dónde-lanzarlos)
+
 ---
 
 ## 1. El mapa: de qué va la asignatura
@@ -1705,6 +1710,9 @@ Después, a mano, **en este orden** (de lo que no depende de nada a lo que depen
 
 ## 10. Git, GitHub y Vercel
 
+> Esto es el resumen rápido. La explicación completa de ramas, comandos y desde qué carpeta
+> lanzarlos está en la [sección 21](#21-git-y-github-a-fondo-ramas-comandos-y-desde-dónde-lanzarlos).
+
 ### 10.1 Conceptos
 
 | Palabra | Qué es |
@@ -2896,3 +2904,405 @@ Cuando lo vayas a hacer, lo montamos paso a paso.
 9. Porque sin zone.js Angular no se entera de cambios en propiedades normales hechos dentro de un callback; el signal le avisa con `.set()`. El pipe `async` ya avisa él solo cuando llegan datos.
 10. Production Branch = `desarrollo` (en la importación o en Settings → Git).
 </details>
+
+---
+
+# PARTE 3 — Tu proyecto `dam2-productos` y Git a fondo
+
+---
+
+## 20. Tu proyecto `dam2-productos` (actividad 03) línea a línea
+
+📁 `C:\DAM 2\Desarrollo de Interfaces\03-API-REST-Productos\dam2-productos`
+
+La sección 16 explica el PDF del profe. Esta explica **tu** proyecto tal y como está, con las
+peticiones del cliente que ya están hechas y pistas para las que faltan. Léela con el código
+abierto al lado.
+
+### 20.1 Mapa del proyecto
+
+```
+dam2-productos/
+├── package.json             ← con "engines": { "node": "24.x" } para Vercel
+├── vercel.json              ← rewrite a index.html (SPA)
+└── src/
+    ├── main.ts              ← arranca la app con appConfig
+    └── app/
+        ├── app.config.ts    ← configuración global: router, Ionic, HttpClient   (petición 7)
+        ├── app.routes.ts    ← /inicio, /productos y '**'
+        ├── app.component.ts ← raíz con <ion-router-outlet>
+        ├── models/product.model.ts      ← Product, Dimensions, ProductsResponse
+        ├── services/product.service.ts  ← HttpClient → Observable
+        └── pages/
+            ├── inicio/      ← portada con botón "Ver productos"
+            └── productos/   ← tabla + dimensiones + stock valorado + volver   (peticiones 1, 2, 3)
+```
+
+**El viaje de los datos** (compáralo con el de la Corporate App, sección 8.1):
+
+```
+dummyjson.com ──HttpClient (Observable)──▶ ProductService ──inject()──▶ ProductosPage ──signal──▶ tabla HTML
+   (internet)                              (prepara el GET)              (subscribe)              (@for)
+```
+
+La diferencia con la Corporate App: allí los datos estaban **dentro** de la app (un JSON en
+`assets`) y se leían con `fetch` + `await`. Aquí vienen **de internet** y se leen con
+`HttpClient` + `subscribe`.
+
+### 20.2 `main.ts` + `app.config.ts` (petición 7)
+
+```ts
+// main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
+
+bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));
+```
+
+`main.ts` ahora solo **arranca**: "empieza por `AppComponent` usando la configuración `appConfig`".
+`.catch(...)` muestra el error en consola si el arranque falla.
+
+```ts
+// app.config.ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },   // navegación estilo Ionic
+    provideIonicAngular(),                                           // activa Ionic
+    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),  // rutas
+    provideHttpClient(),                                             // permite inyectar HttpClient
+  ],
+};
+```
+
+- `ApplicationConfig` es el **tipo** de este objeto (TypeScript te avisa si escribes algo que no va).
+- `providers` = la lista de cosas que el **inyector** de Angular sabrá crear y repartir (sección 5.9).
+- **Respuesta a la petición 7:** existe porque en standalone **no hay `AppModule`**; la configuración
+  global que antes iba en el módulo ahora va en este objeto. La plantilla de Ionic la traía metida en
+  `main.ts`; la saqué a su propio fichero para separar "arrancar" de "configurar".
+
+### 20.3 `models/product.model.ts`
+
+```ts
+export interface Dimensions {   // un "sub-molde" para el objeto dimensions de la API
+  width: number;                // ancho
+  height: number;               // alto
+  depth: number;                // fondo
+}
+
+export interface Product {
+  ...
+  brand?: string;               // el ? = campo OPCIONAL (algunos productos no lo traen)
+  dimensions: Dimensions;       // un campo cuyo tipo es otra interface
+}
+```
+
+- **Interfaces dentro de interfaces:** la API manda
+  `"dimensions": { "width": 15.14, "height": 13.08, "depth": 22.99 }`, que es un objeto dentro
+  del producto. Para describirlo se crea otra interface (`Dimensions`) y se usa como tipo.
+  Luego se accede con puntos: `product.dimensions.width`.
+- **`?` = opcional:** `brand?: string` significa "puede estar o no". Por eso en el HTML se usa
+  `product.brand || 'Sin marca'`.
+
+### 20.4 `services/product.service.ts`
+
+Igual que el de la sección 16.5: `inject(HttpClient)` y un método que devuelve
+`this.http.get<ProductsResponse>(this.apiUrl)` **sin suscribirse** (devuelve la "receta", sección 15).
+
+### 20.5 `pages/productos/productos.page.ts`
+
+```ts
+export class ProductosPage implements OnInit {
+  private productService = inject(ProductService);   // DI
+
+  products = signal<Product[]>([]);                   // 4 signals = el "estado" de la página
+  total = signal(0);
+  loading = signal(false);
+  error = signal('');
+
+  ngOnInit(): void { this.loadProducts(); }           // al abrir la página, cargar
+
+  loadProducts(): void {
+    this.loading.set(true);                           // → el HTML enseña el spinner
+    this.error.set('');                               // → borra errores anteriores
+    this.productService.getProducts().subscribe({     // → AHORA sale la petición
+      next: (response: ProductsResponse) => {         // → llegó bien
+        this.products.set(response.products);         //   la lista va DENTRO de response
+        this.total.set(response.total);
+        this.loading.set(false);                      //   → quita el spinner, pinta la tabla
+      },
+      error: (err) => {                               // → falló
+        console.error(err);
+        this.error.set('No se han podido cargar los productos.');   // → el HTML enseña la tarjeta de error
+        this.loading.set(false);
+      },
+    });
+  }
+
+  stockValorado(p: Product): number {                 // petición 2
+    const bruto = p.stock * p.price;
+    return bruto - bruto * (p.discountPercentage / 100);
+  }
+}
+```
+
+**Cómo leer `stockValorado` paso a paso**, con un producto de 99 unidades a 9,99 € y 10 % de descuento:
+
+| Línea | Cálculo | Resultado |
+|---|---|---|
+| `const bruto = p.stock * p.price` | 99 × 9,99 | 989,01 |
+| `bruto * (p.discountPercentage / 100)` | 989,01 × 0,10 | 98,90 (lo que se descuenta) |
+| `return bruto - ...` | 989,01 − 98,90 | **890,11** |
+
+`discountPercentage` viene como **porcentaje** (10 = 10 %), por eso se divide entre 100.
+
+**El estado de la página es una "máquina de 3 estados"**, controlada por los signals:
+
+| `loading()` | `error()` | Qué se ve |
+|---|---|---|
+| `true` | `''` | Spinner "Cargando productos…" |
+| `false` | `'No se han podido…'` | Tarjeta de error con botón Reintentar |
+| `false` | `''` | La tabla |
+
+(Un texto vacío `''` cuenta como **falso** en un `@if`; un texto con algo cuenta como **verdadero**.)
+
+### 20.6 `pages/productos/productos.page.html` (peticiones 1, 2 y 3)
+
+```html
+<ion-button routerLink="/inicio" fill="outline">Volver a inicio</ion-button>   <!-- petición 3 -->
+```
+- `routerLink="/inicio"` navega al pulsar (hace falta `RouterLink` en los `imports` del `.ts`).
+- `fill="outline"`: estilo de Ionic, botón solo con borde. Otros: `solid` (relleno), `clear` (sin fondo).
+
+```html
+<td>{{ product.dimensions.width | number: '1.0-2' }} × {{ product.dimensions.height | number: '1.0-2' }}</td>  <!-- petición 1 -->
+```
+- Dos **interpolaciones** seguidas con un `×` en medio.
+- `| number: '1.0-2'` es el pipe de números (necesita `DecimalPipe` en `imports`). El formato
+  `'1.0-2'` = mínimo 1 cifra entera, entre 0 y 2 decimales: `15.1400001` → `15.14`.
+
+```html
+<td>{{ stockValorado(product) | currency: 'EUR' }}</td>   <!-- petición 2 -->
+```
+- Dentro de `{{ }}` se puede **llamar a un método** de la clase pasándole el producto de esa fila.
+  Angular llama a `stockValorado(product)` por cada fila y escribe el resultado formateado como dinero.
+
+### 20.7 Lo que falta, con pistas (para cuando lo hagas tú)
+
+| Petición | Pista |
+|---|---|
+| **4. About** | `ionic generate page pages/about` → añadir la ruta `about` en `app.routes.ts` (¡antes del `'**'`!) → en `inicio.page.html` otro `<ion-button routerLink="/about">` → en `about.page.html` un `<ion-card>` con la reseña y `<a href="https://github.com/JorgeGonzalezDI" target="_blank">`. |
+| **6. Paginación** | dummyjson acepta `?limit=10&skip=20` (10 productos saltándose los 20 primeros). Un signal `pagina`, botones Anterior/Siguiente con `(click)` que cambian la página y vuelven a llamar a `loadProducts()`. El servicio recibe `skip` y `limit` como parámetros. Total de páginas = `Math.ceil(total / limit)`. |
+| **9. Modo oscuro** | En `global.scss` cambiar `dark.system.css` por `dark.class.css`. Un `<ion-toggle>` o botón que haga `document.documentElement.classList.toggle('ion-palette-dark')`. |
+| **10. Reto visual** | Cambiar la `<table>` por un `@for` que pinte `<ion-card>` (imagen arriba, título, precio, rating…) dentro de un `<ion-grid>` con `<ion-col size="12" size-md="6" size-lg="3">` (1, 2 o 4 por fila según la pantalla). |
+
+---
+
+## 21. Git y GitHub a fondo: ramas, comandos y desde dónde lanzarlos
+
+### 21.1 El modelo mental: 4 sitios donde viven tus cambios
+
+```
+  TU PC                                                           INTERNET
+┌───────────────────┐  git add  ┌──────────────┐ git commit ┌───────────────┐  git push  ┌──────────────┐
+│ 1. Carpeta de     │ ────────▶ │ 2. Staging   │ ─────────▶ │ 3. Repositorio│ ─────────▶ │ 4. GitHub    │
+│ trabajo (tus      │           │ (preparados  │            │ local (.git)  │            │ (origin)     │
+│ ficheros)         │           │ para la foto)│            │ historial     │ ◀───────── │              │
+└───────────────────┘           └──────────────┘            └───────────────┘  git pull  └──────────────┘
+```
+
+1. **Carpeta de trabajo**: tus ficheros normales. Aquí editas.
+2. **Staging** (zona de preparación): lo que has marcado con `git add` para la próxima foto.
+3. **Repositorio local**: el historial de fotos (commits), guardado en la carpeta oculta `.git`.
+   **Todavía solo en tu PC.**
+4. **GitHub** (*remote*, llamado `origin`): la copia en internet. Solo se actualiza con `git push`.
+
+> Error típico: hacer `commit` y pensar que ya está en GitHub. **No:** el commit es local. Hasta que
+> no haces `push`, ni el profe ni Vercel lo ven.
+
+### 21.2 Desde dónde se lanza cada comando (lo más importante)
+
+Git funciona **dentro de un repositorio**: una carpeta que tiene la carpeta oculta `.git`. Tus repos:
+
+| Carpeta (repositorio) | GitHub |
+|---|---|
+| `C:\DAM 2\Desarrollo de Interfaces` | `Desarrollo-Interfaces-DAM-2` |
+| `C:\DAM 2\Acceso a Datos` | `Acceso-Datos-DAM-2` |
+| `C:\DAM 2\Programacion de Servicios y Procesos` | `Programacion-Servicios-Procesos-DAM-2` |
+| `C:\DAM 2\Unity` | `Unity-DAM-2` |
+
+`C:\DAM 2` **no es** un repositorio. Si lanzas `git status` ahí, sale
+`fatal: not a git repository`.
+
+**Regla:** los comandos **de git** van desde la **carpeta de la asignatura**; los comandos **de
+npm/ionic** van desde la **carpeta del proyecto** (la que tiene `package.json`).
+
+| Quiero… | Carpeta desde la que lo lanzo | Comando |
+|---|---|---|
+| Ver cambios, hacer commit, push, cambiar de rama | `C:\DAM 2\Desarrollo de Interfaces` | `git status`, `git add .`, `git commit`, `git push`… |
+| Instalar dependencias | `...\03-API-REST-Productos\dam2-productos` | `npm install` |
+| Arrancar la app | `...\03-API-REST-Productos\dam2-productos` | `ionic serve` |
+| Generar una página | `...\03-API-REST-Productos\dam2-productos` | `ionic generate page pages/about` |
+
+(Git en realidad funciona desde cualquier subcarpeta del repo, porque busca el `.git` hacia arriba.
+Pero acostúmbrate a lanzarlo desde la raíz de la asignatura: así `git add .` coge **todo**, no solo
+la subcarpeta en la que estés.)
+
+**Cómo trabajar cómodo en VS Code:** abre **la carpeta del proyecto** (`dam2-productos`) para
+programar, y abre **una segunda terminal** (icono **+**) para git:
+
+```powershell
+# Terminal 1 (proyecto): se queda con ionic serve corriendo
+cd "C:\DAM 2\Desarrollo de Interfaces\03-API-REST-Productos\dam2-productos"
+ionic serve
+
+# Terminal 2 (git)
+cd "C:\DAM 2\Desarrollo de Interfaces"
+git status
+```
+
+Las comillas en `cd "..."` son **obligatorias** porque la ruta tiene espacios (`DAM 2`).
+
+**¿Cómo sé dónde estoy?** PowerShell lo pone delante del cursor:
+`PS C:\DAM 2\Desarrollo de Interfaces>`. Y `git status` te dice la rama en la que estás.
+
+### 21.3 Ramas: qué son
+
+Una **rama** (*branch*) es una **línea de trabajo paralela** dentro del mismo repositorio.
+
+**Analogía de videojuego:** es como tener **varias partidas guardadas** del mismo juego. En la
+partida `main` tienes la versión buena, la que enseñas. En la partida `desarrollo` pruebas cosas;
+si la lías, la partida `main` sigue intacta. Cuando lo que has hecho en `desarrollo` está bien, lo
+"pasas" a `main` (*merge*).
+
+```
+main        ●───●───────────────●          ← versión validada (la que publica Vercel)
+                 \             ↗ merge
+desarrollo        ●───●───●───●           ← donde trabajas cada día
+```
+
+- Cada `●` es un commit.
+- **HEAD** = "dónde estás ahora mismo" (en qué rama).
+- **Al cambiar de rama, los ficheros de tu carpeta CAMBIAN** para mostrar el estado de esa rama.
+  Si en `desarrollo` has creado `about.page.ts` y te cambias a `main` (donde todavía no existe),
+  **el fichero desaparece de la carpeta**. No se ha perdido: vuelve al cambiar a `desarrollo`.
+
+### 21.4 Comandos de ramas
+
+| Comando | Qué hace |
+|---|---|
+| `git branch` | Lista las ramas locales; la actual lleva `*` |
+| `git branch -a` | Lista también las de GitHub (`remotes/origin/...`) |
+| `git branch --show-current` | Dice solo el nombre de la rama actual |
+| `git checkout desarrollo` | Cambiarse a la rama `desarrollo` (también vale `git switch desarrollo`) |
+| `git checkout -b nueva` | **Crear** la rama `nueva` y cambiarse a ella (`-b` = *branch*) |
+| `git merge desarrollo` | Traer a la rama **actual** los commits de `desarrollo` |
+| `git push origin desarrollo` | Subir la rama `desarrollo` a GitHub |
+| `git push -u origin desarrollo` | Lo mismo, y además "recuerda" la relación (*upstream*): luego basta con `git push` |
+| `git branch -d nombre` | Borrar una rama local (ya fusionada) |
+| `git log --oneline --graph --all` | Ver el historial de todas las ramas en forma de árbol |
+
+**Antes de cambiar de rama, haz commit** de lo que tengas a medias. Si no, git puede negarse
+(*"Your local changes would be overwritten by checkout"*) o llevarse tus cambios a la otra rama.
+
+### 21.5 Tu flujo de trabajo diario (el que pide el profe)
+
+```powershell
+cd "C:\DAM 2\Desarrollo de Interfaces"
+
+# ── 1. Asegurarte de estar en desarrollo ──
+git checkout desarrollo
+git branch --show-current          # debe decir: desarrollo
+
+# ── 2. Programar (en la otra terminal, con ionic serve) y guardar ──
+git status                         # ver qué ha cambiado
+git add .
+git commit -m "Productos: añadir paginación"
+git push origin desarrollo         # subir tu trabajo (todavía NO se publica en Vercel)
+
+# ── 3. Cuando esté probado y bien: pasarlo a main ──
+git checkout main                  # ir a la rama buena
+git merge desarrollo               # traer los cambios de desarrollo
+git push origin main               # subir main → Vercel publica automáticamente
+
+# ── 4. Volver a desarrollo para seguir ──
+git checkout desarrollo
+```
+
+**Mensajes de commit:** que digan **qué** has hecho, en presente y concretos:
+`"Productos: añadir columna de dimensiones"`, no `"cambios"` ni `"asdf"`. El profe los mira
+("commits descriptivos" en la checklist).
+
+### 21.6 Merge: qué puede pasar
+
+- **Fast-forward** (lo normal en tu caso): si `main` no ha cambiado desde que creaste `desarrollo`,
+  git simplemente "adelanta" `main` hasta donde está `desarrollo`. Sin preguntas.
+- **Merge commit**: si las dos ramas tienen commits distintos, git crea un commit nuevo que junta
+  ambas. Puede abrirte un editor para el mensaje (en la terminal: escribe `:wq` y Enter si es Vim).
+- **Conflicto**: si las dos ramas cambiaron **las mismas líneas** del mismo fichero, git no sabe
+  cuál quedarse y marca el fichero así:
+
+  ```
+  <<<<<<< HEAD
+  <ion-title>Productos</ion-title>          ← versión de la rama actual (main)
+  =======
+  <ion-title>Catálogo</ion-title>           ← versión de desarrollo
+  >>>>>>> desarrollo
+  ```
+
+  Solución: editar el fichero dejando la versión buena (borrando las marcas `<<<<<<<`, `=======`,
+  `>>>>>>>`), luego `git add .` y `git commit`. VS Code te pone botones *"Accept Current / Incoming /
+  Both"* encima del conflicto. Si trabajas siempre en `desarrollo` y solo haces merge hacia `main`,
+  casi nunca te pasará.
+
+**Alternativa desde la web:** en GitHub, botón **"Compare & pull request"** → de `desarrollo` a
+`main` → **Merge pull request**. Hace lo mismo que el `git merge`, pero queda registrado en la web.
+Después, en tu PC: `git checkout main` + `git pull` para tener el `main` actualizado.
+
+### 21.7 GitHub y Vercel con ramas
+
+- **En GitHub**: el selector de ramas (arriba a la izquierda, pone `main`) permite ver el código de
+  cada rama. El profe puede mirar `desarrollo` (en lo que estás) o `main` (lo validado).
+- **En Vercel**: *Settings → Git → Production Branch* = `main`. Cada push a `main` = **despliegue de
+  producción** (la URL oficial). Cada push a `desarrollo` = **despliegue de vista previa**
+  (*Preview*, con una URL rara), útil para probar antes de pasar a `main`.
+- Tu repo tiene además dos ramas viejas, `develop` y `prueba`, de las primeras semanas. Ya no se
+  usan; se pueden borrar más adelante desde GitHub (*Branches* → icono de papelera).
+
+### 21.8 `push`, `pull` y `fetch`
+
+| Comando | Qué hace |
+|---|---|
+| `git push` | Sube tus commits a GitHub |
+| `git pull` | Baja de GitHub los commits que no tienes y los mezcla con tu rama (útil si trabajas en dos PCs o si cambiaste algo desde la web) |
+| `git fetch` | Solo consulta qué hay nuevo en GitHub, sin mezclar nada |
+| `git push --force` | **Sobrescribe** GitHub con tu versión, borrando lo que hubiera allí y tú no tengas. Peligroso: solo cuando sabes exactamente por qué (lo usamos una vez para separar las asignaturas en repos distintos). |
+
+### 21.9 Problemas típicos y cómo resolverlos
+
+| Mensaje | Qué significa | Solución |
+|---|---|---|
+| `fatal: not a git repository` | No estás dentro de un repo (p. ej. en `C:\DAM 2`) | `cd "C:\DAM 2\Desarrollo de Interfaces"` |
+| `nothing to commit, working tree clean` | No hay cambios (o ya hiciste commit) | Nada: está todo guardado. ¿Te falta el `push`? |
+| `The current branch desarrollo has no upstream branch` | Es el primer push de esa rama | `git push -u origin desarrollo` |
+| `! [rejected] ... (fetch first)` / `non-fast-forward` | GitHub tiene commits que tú no tienes | `git pull` y luego `git push` |
+| `Your local changes would be overwritten by checkout` | Cambios sin commit al cambiar de rama | `git add .` + `git commit` antes del `checkout` |
+| `Unable to create '.../index.lock': File exists` | Un proceso de git se quedó a medias | Cerrar otros git/VS Code; borrar el fichero `.git\index.lock` |
+| `warning: LF will be replaced by CRLF` | Aviso de saltos de línea Windows/Linux | Inofensivo, ignorarlo |
+| `CONFLICT (content): Merge conflict in ...` | Las dos ramas cambiaron las mismas líneas | Ver 21.6 |
+
+### 21.10 Chuleta de bolsillo
+
+```powershell
+cd "C:\DAM 2\Desarrollo de Interfaces"   # SIEMPRE primero: entrar en el repo
+git status                               # ¿qué hay cambiado? ¿en qué rama estoy?
+git checkout desarrollo                  # trabajar en desarrollo
+git add .                                # preparar todo
+git commit -m "Qué he hecho"             # foto local
+git push origin desarrollo               # subir desarrollo
+git checkout main                        # ─┐
+git merge desarrollo                     #  ├ publicar: desarrollo → main → Vercel
+git push origin main                     # ─┘
+git checkout desarrollo                  # volver a trabajar
+git log --oneline --graph --all          # ver el árbol de commits
+```
