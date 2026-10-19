@@ -1,0 +1,131 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Nuevo producto</ion-title>
+    <!-- Barra de progreso mientras el signal guardando() es true -->
+    @if (guardando()) {
+      <ion-progress-bar type="indeterminate" color="light"></ion-progress-bar>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <p class="intro">Alta de productos en el almacén. Los campos con * son obligatorios.</p>
+
+  <!-- [formGroup] enlaza la etiqueta con el FormGroup del .ts -->
+  <form [formGroup]="form" (ngSubmit)="guardar()" [attr.aria-busy]="guardando()" novalidate>
+    <ion-list lines="full">
+
+      <!-- Código de barras (SKU): 12 caracteres alfanuméricos -->
+      <ion-item>
+        <ion-icon slot="start" name="barcode-outline" aria-hidden="true"></ion-icon>
+        <ion-input
+          label="Código de barras (SKU) *"
+          labelPlacement="floating"
+          type="text"
+          inputmode="text"
+          autocapitalize="characters"
+          autocomplete="off"
+          enterkeyhint="next"
+          [maxlength]="12"
+          [counter]="true"
+          helperText="12 letras o números"
+          formControlName="sku"
+          [errorText]="mensajeError('sku')">
+        </ion-input>
+      </ion-item>
+
+      <!-- Nombre del producto -->
+      <ion-item>
+        <ion-icon slot="start" name="pricetag-outline" aria-hidden="true"></ion-icon>
+        <ion-input
+          label="Nombre del producto *"
+          labelPlacement="floating"
+          type="text"
+          autocapitalize="sentences"
+          enterkeyhint="next"
+          formControlName="nombre"
+          [errorText]="mensajeError('nombre')">
+        </ion-input>
+      </ion-item>
+
+      <!-- Categoría: menú desplegable -->
+      <ion-item>
+        <ion-icon slot="start" name="layers-outline" aria-hidden="true"></ion-icon>
+        <ion-select
+          label="Categoría *"
+          labelPlacement="floating"
+          interface="action-sheet"
+          cancelText="Cancelar"
+          formControlName="categoria"
+          [errorText]="mensajeError('categoria')">
+          @for (categoria of categorias; track categoria) {
+            <ion-select-option [value]="categoria">{{ categoria }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <!-- Stock mínimo: teclado numérico nativo -->
+      <ion-item>
+        <ion-icon slot="start" name="cube-outline" aria-hidden="true"></ion-icon>
+        <ion-input
+          label="Stock mínimo *"
+          labelPlacement="floating"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          step="1"
+          enterkeyhint="done"
+          helperText="Unidades (número entero mayor que 0)"
+          formControlName="stockMinimo"
+          [errorText]="mensajeError('stockMinimo')">
+        </ion-input>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding-top">
+      <!-- El botón solo se bloquea mientras se guarda: si el form es inválido,
+           al pulsarlo se marcan todos los campos y se ven los errores -->
+      <ion-button expand="block" type="submit" [disabled]="guardando()">
+        @if (guardando()) {
+          <ion-spinner slot="start" name="crescent" aria-hidden="true"></ion-spinner>
+          Guardando…
+        } @else {
+          <ion-icon slot="start" name="save-outline" aria-hidden="true"></ion-icon>
+          Guardar producto
+        }
+      </ion-button>
+    </div>
+  </form>
+
+  <!-- Lo guardado en el dispositivo (Capacitor Preferences) -->
+  <ion-list class="guardados">
+    <ion-list-header>
+      <ion-label>Guardados en este dispositivo ({{ inventario.productos().length }})</ion-label>
+    </ion-list-header>
+
+    @for (producto of inventario.productos(); track producto.id) {
+      <ion-item>
+        <ion-label>
+          <h3>{{ producto.nombre }}</h3>
+          <p>SKU {{ producto.sku }} · Stock mín. {{ producto.stockMinimo }} uds.</p>
+        </ion-label>
+        <ion-badge slot="end" color="medium">{{ producto.categoria }}</ion-badge>
+      </ion-item>
+    } @empty {
+      <ion-item lines="none">
+        <ion-note>Todavía no hay productos guardados.</ion-note>
+      </ion-item>
+    }
+  </ion-list>
+
+  <!-- Confirmación (o aviso) al terminar -->
+  <ion-toast
+    [isOpen]="toastAbierto()"
+    [message]="toastMensaje()"
+    [color]="toastColor()"
+    [icon]="toastColor() === 'success' ? 'checkmark-circle-outline' : 'alert-circle-outline'"
+    [duration]="2500"
+    position="bottom"
+    (didDismiss)="toastAbierto.set(false)">
+  </ion-toast>
+</ion-content>

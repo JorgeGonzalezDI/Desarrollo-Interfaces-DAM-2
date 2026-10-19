@@ -1,0 +1,34 @@
+// Ancho máximo para que en tablet/escritorio el formulario no se estire de lado a lado
+form,
+.intro,
+.guardados {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.intro {
+  margin-top: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+}
+
+ion-item ion-icon[slot='start'] {
+  color: var(--ion-color-primary);
+}
+
+// Botón con área táctil cómoda (WCAG recomienda mínimo 44px)
+ion-button {
+  min-height: 48px;
+  margin-top: 8px;
+}
+
+ion-button ion-spinner {
+  width: 20px;
+  height: 20px;
+  margin-inline-end: 8px;
+}
+
+.guardados {
+  margin-top: 32px;
+}

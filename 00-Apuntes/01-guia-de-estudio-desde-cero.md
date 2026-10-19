@@ -34,6 +34,15 @@
 20. [Tu proyecto `dam2-productos` (actividad 03) línea a línea](#20-tu-proyecto-dam2-productos-actividad-03-línea-a-línea)
 21. [Git y GitHub a fondo: ramas, comandos y desde dónde lanzarlos](#21-git-y-github-a-fondo-ramas-comandos-y-desde-dónde-lanzarlos)
 
+**Actividades con sus propios apuntes** (cada carpeta tiene su `00-teoria-y-apuntes.md`, con una tabla "Dónde está la teoría" que te manda a las páginas del dossier y a las secciones de esta guía)
+
+| Nº | Actividad | Carpeta | Apuntes |
+|----|-----------|---------|---------|
+| 04 | Reactividad con Signals (carrito) | `04-Reactividad-Signals-Carrito/` | `04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` |
+| 05 | Lab TechTicket: Store + Signals + Android | `05-Lab-Reactividad-TechTicket/` | `05-Lab-Reactividad-TechTicket/00-teoria-y-apuntes.md` |
+| 06 | Supabase: login, perfiles y roles | `06-Supabase-Auth-Roles/` | `06-Supabase-Auth-Roles/00-teoria-y-apuntes.md` |
+| 07 | Formularios reactivos: alta de productos de inventario (19-10-2026) | `07-Formularios-Reactivos-Inventario/` (proyecto en `inventario-app/`) | `07-Formularios-Reactivos-Inventario/00-teoria-y-apuntes.md` → Reactive Forms §1–2, validadores §4, `.ts` §5, `.html` §6, guardado local §7, tests §8 |
+
 ---
 
 ## 1. El mapa: de qué va la asignatura
