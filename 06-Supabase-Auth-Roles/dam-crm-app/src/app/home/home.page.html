@@ -1,0 +1,137 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>DAM CRM - Gestión de Clientes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()" aria-label="Cerrar sesión">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- ion-grid: en móvil una columna; en tablet/escritorio, formulario a la izquierda y lista a la derecha -->
+  <ion-grid [fixed]="true">
+    <ion-row>
+      <ion-col size="12">
+        <!-- Quién está conectado y con qué rol -->
+        <ion-chip class="usuario" [outline]="true">
+          <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+          <ion-label>{{ currentUser()?.email }}</ion-label>
+          <ion-badge [color]="isAdmin() ? 'success' : 'medium'">{{ userRole() ?? 'sin rol' }}</ion-badge>
+        </ion-chip>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" sizeMd="5">
+        <!-- FORMULARIO REACTIVO (Solo visible para admins) -->
+        @if (isAdmin()) {
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>{{ editingClientId() ? 'Editar Cliente' : 'Nuevo Cliente' }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <form [formGroup]="clientForm" (ngSubmit)="saveClient()" novalidate>
+                <ion-item>
+                  <ion-input label="Nombre" labelPlacement="stacked" type="text"
+                    formControlName="nombre" [errorText]="mensajeError('nombre')"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Empresa" labelPlacement="stacked" type="text"
+                    formControlName="empresa" [errorText]="mensajeError('empresa')"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input label="Email" labelPlacement="stacked" type="email" inputmode="email"
+                    formControlName="email" [errorText]="mensajeError('email')"></ion-input>
+                </ion-item>
+
+                <div class="ion-margin-top">
+                  <ion-button type="submit" expand="block" [disabled]="clientForm.invalid || guardando()">
+                    @if (guardando()) {
+                      <ion-spinner slot="start" name="crescent"></ion-spinner>
+                    } @else {
+                      <ion-icon slot="start" name="save-outline" aria-hidden="true"></ion-icon>
+                    }
+                    {{ editingClientId() ? 'Actualizar' : 'Guardar' }}
+                  </ion-button>
+                  @if (editingClientId()) {
+                    <ion-button type="button" fill="clear" expand="block" color="medium" (click)="resetForm()">
+                      Cancelar
+                    </ion-button>
+                  }
+                </div>
+              </form>
+            </ion-card-content>
+          </ion-card>
+        } @else {
+          <!-- Usuario sin rol admin: no ve el formulario -->
+          <ion-card color="light">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="eye-outline" aria-hidden="true"></ion-icon> Modo lectura
+              </ion-card-title>
+              <ion-card-subtitle>Rol: {{ userRole() ?? 'sin rol' }}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              Puedes consultar los clientes. Solo los administradores pueden crear, editar o borrar.
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-col>
+
+      <ion-col size="12" sizeMd="7">
+        <!-- TABLA / LISTA DE CLIENTES -->
+        <ion-list>
+          <ion-list-header>
+            <ion-label>Listado de Clientes ({{ clients().length }})</ion-label>
+          </ion-list-header>
+
+          @if (isAdmin()) {
+            <ion-note class="pista">Desliza un cliente a la izquierda para editarlo o borrarlo.</ion-note>
+          }
+
+          @if (cargando()) {
+            <div class="ion-text-center ion-padding">
+              <ion-spinner name="crescent"></ion-spinner>
+            </div>
+          } @else {
+            @for (client of clients(); track client.id) {
+              <ion-item-sliding #sliding>
+                <ion-item>
+                  <ion-label>
+                    <h2>{{ client.nombre }}</h2>
+                    <p>{{ client.empresa }} | {{ client.email }}</p>
+                  </ion-label>
+                </ion-item>
+
+                <!-- Opciones al deslizar (Solo Administradores) -->
+                @if (isAdmin()) {
+                  <ion-item-options side="end">
+                    <ion-item-option color="primary" (click)="editClient(client, sliding)">
+                      <ion-icon slot="icon-only" name="create-outline" aria-label="Editar"></ion-icon>
+                    </ion-item-option>
+                    <ion-item-option color="danger" (click)="deleteClient(client, sliding)">
+                      <ion-icon slot="icon-only" name="trash-outline" aria-label="Borrar"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+                }
+              </ion-item-sliding>
+            } @empty {
+              <ion-item>
+                <ion-label color="medium">No hay clientes registrados.</ion-label>
+              </ion-item>
+            }
+          }
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-toast
+    [isOpen]="isToastOpen()"
+    [message]="toastMessage()"
+    [color]="toastColor()"
+    [duration]="2000"
+    (didDismiss)="isToastOpen.set(false)">
+  </ion-toast>
+</ion-content>

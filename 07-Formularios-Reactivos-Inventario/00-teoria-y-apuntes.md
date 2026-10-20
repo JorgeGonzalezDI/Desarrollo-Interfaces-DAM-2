@@ -513,27 +513,3 @@ npm test         # tests de los validadores
 ```
 Para verlo como en el móvil: F12 → icono de móvil (Ctrl + Shift + M).
 
----
-
-## Rehazlo tú desde cero (cuando vuelvas a esta práctica)
-
-**Antes, tener leído:** guía de estudio §5 entera (sobre todo §5.3 data binding, §5.4 `@if`/`@for`, §5.6 signals, §5.9 servicios) y los apuntes de la 04 (signals). Luego lee de este fichero §1 y §2 (qué es un formulario reactivo).
-
-La solución buena está en `inventario-app/`: **no la toques**. Haz la tuya al lado, en `07-Formularios-Reactivos-Inventario/inventario-mio/`, y compara solo cuando te atasques.
-
-| Paso | Qué haces | Comando / fichero | Si te atascas |
-|---|---|---|---|
-| 1 | Crear el proyecto (sin git, que ya estás dentro del repo) | `ionic start inventario-mio blank --type=angular-standalone --no-git` | — |
-| 2 | Instalar el guardado local | `cd inventario-mio` → `npm install @capacitor/preferences` | §7 |
-| 3 | Generar la página | `ionic g page pages/nuevo-producto` y en `app.routes.ts` que `''` redirija a `nuevo-producto` | guía §5.8 |
-| 4 | El modelo | `src/app/models/producto.model.ts`: `CATEGORIAS`, tipo `Categoria`, interfaces | §3 |
-| 5 | Formulario mínimo **sin** validaciones: 4 `ion-input`/`ion-select` con `formControlName`, botón submit que hace `console.log(this.form.value)` | `.page.ts` + `.page.html` (acuérdate de `ReactiveFormsModule`) | §5.1, §5.3, §6.1–6.4 |
-| 6 | Validaciones de Angular (`Validators.required`, `maxLength`) y `errorText` fijo | `.page.ts` | §2 (estados), §6.2 |
-| 7 | Tus 3 validadores personalizados | `src/app/validators/producto.validators.ts` | §4 |
-| 8 | `mensajeError(campo)` para que el mensaje dependa del error | `.page.ts` | §5.7 |
-| 9 | El servicio con espera simulada + `Preferences` | `src/app/services/inventario.service.ts` | §7 |
-| 10 | Signal `guardando`, `effect` que desactiva el form, spinner en el botón | `.page.ts` + `.page.html` | §5.4–5.6, §6.5 |
-| 11 | `<ion-toast>` con signals | `.page.html` | §6.8 |
-| 12 | Probar: enviar vacío, SKU corto, stock 0, guardar, recargar | `ionic serve` + F12 → Ctrl+Shift+M | §10 (errores típicos) |
-
-Prueba de que lo has entendido: responder sin mirar las **preguntas de repaso** (§11).

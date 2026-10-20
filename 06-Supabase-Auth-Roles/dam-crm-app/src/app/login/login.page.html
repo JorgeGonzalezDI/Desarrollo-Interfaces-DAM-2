@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>DAM CRM</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card class="login-card">
+    <ion-card-header>
+      <ion-card-title>Iniciar sesión</ion-card-title>
+      <ion-card-subtitle>Gestión de clientes con roles</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input
+              label="Email"
+              labelPlacement="stacked"
+              type="email"
+              inputmode="email"
+              autocomplete="username"
+              formControlName="email"
+              [errorText]="mensajeError('email')">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Contraseña"
+              labelPlacement="stacked"
+              type="password"
+              autocomplete="current-password"
+              formControlName="password"
+              [errorText]="mensajeError('password')">
+            </ion-input>
+          </ion-item>
+        </ion-list>
+
+        <ion-button type="submit" expand="block" class="ion-margin-top" [disabled]="entrando()">
+          @if (entrando()) {
+            <ion-spinner slot="start" name="crescent"></ion-spinner>
+            Entrando…
+          } @else {
+            <ion-icon slot="start" name="log-in-outline" aria-hidden="true"></ion-icon>
+            Entrar
+          }
+        </ion-button>
+      </form>
+
+      <ion-note class="pista">
+        Usuarios de prueba: <strong>admin&#64;dam.com</strong> (admin) y <strong>user&#64;dam.com</strong> (solo lectura).
+      </ion-note>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-toast
+    [isOpen]="isToastOpen()"
+    [message]="toastMessage()"
+    color="danger"
+    [duration]="3000"
+    (didDismiss)="isToastOpen.set(false)">
+  </ion-toast>
+</ion-content>

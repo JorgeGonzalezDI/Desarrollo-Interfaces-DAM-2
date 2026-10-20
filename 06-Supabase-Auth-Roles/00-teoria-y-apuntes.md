@@ -364,3 +364,73 @@ static Predicate<Usuario> tieneRol(String rol) {
    → Para que no pase por RLS y no entre en bucle (una política de `profiles` que lee `profiles`).
 8. ¿Qué hace el trigger?
    → Al registrarse un usuario, le crea su fila en `profiles` con rol `viewer`.
+
+
+---
+
+# Laboratorio · Gestión Completa CRUD con Roles (`dam-crm-app`)
+
+## Dónde está
+
+| Qué | Dónde |
+|---|---|
+| Enunciado | `Lab_Supabase_Ionic_Angular.pdf` (en esta carpeta, 11 págs.) |
+| · SQL: enum `user_role`, tablas `profiles` y `clients`, RLS | Lab, pág. 2 |
+| · Crear el proyecto e instalar `@supabase/supabase-js` | Lab, pág. 3 |
+| · `environment.ts` y el modelo `Client` | Lab, pág. 3 |
+| · El servicio `supabase.service.ts` | Lab, págs. 4–5 |
+| · La página `home.page.ts` | Lab, págs. 6–8 |
+| · La vista `home.page.html` | Lab, págs. 9–11 |
+| Proyecto | `dam-crm-app/` (en esta carpeta) |
+| Teoría que usa | Este mismo fichero, arriba (RLS, `.single()`, `USING` / `WITH CHECK`); formularios reactivos en `../07-Formularios-Reactivos-Inventario/00-teoria-y-apuntes.md` §1–2; signals en `../04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` |
+
+| Fichero del proyecto | Para qué |
+|---|---|
+| `src/environments/environment.ts` (y `.prod.ts`) | URL y clave pública de tu proyecto Supabase |
+| `src/app/models/client.model.ts` | La forma de un cliente |
+| `src/app/services/supabase.service.ts` | Login/logout, leer el rol y CRUD de `clients` |
+| `src/app/guards/auth.guard.ts` | Sin sesión no se entra en `/home` |
+| `src/app/login/` | Pantalla de login |
+| `src/app/home/` | Listado + formulario (solo admin) + deslizar para editar/borrar |
+| `src/app/utils/texto-error.ts` | Traduce los errores de Supabase al español para el toast |
+
+## La idea
+
+```
+login (email + contraseña) ─► supabase.auth.signInWithPassword ─► currentUser.set(user)
+                                                                   │
+                                   profiles.select('role') ◄───────┘ loadRole()
+                                          │
+                                          ▼
+                              userRole = 'admin' | 'user'   (signal)
+                                          │
+              ┌───────────────────────────┴───────────────────────────┐
+              ▼                                                        ▼
+   admin: formulario + deslizar editar/borrar           user: "Modo lectura", solo el listado
+              │
+              ▼
+   insert / update / delete en clients ─► RLS en Supabase comprueba que eres admin
+```
+
+La seguridad de verdad está en la **base de datos** (RLS). El `@if (isAdmin())` solo **esconde** botones; aunque alguien los forzara, Supabase rechazaría la escritura de un `user`.
+
+## Diferencias con el código del PDF (y por qué)
+
+| PDF | Aquí | Por qué |
+|---|---|---|
+| No hay login ("asumimos que ya está logueado") | Página `login/` + `auth.guard.ts` | Sin sesión, la política "Lectura para autenticados" no deja ver nada |
+| `from '@ionic/angular/standalone'` | `from '@ionic/angular'` | En Ionic 9 los componentes standalone ya vienen en el paquete principal |
+| `clients: Client[] = []`, `isToastOpen = false`… | `clients = signal<Client[]>([])`… | Tu Angular 22 va **sin zone.js**: tras un `await`, una propiedad normal cambia pero la vista no se entera. Con signals sí |
+| `isAdmin = this.supabaseService.userRole` y `isAdmin() === 'admin'` | `userRole` (el rol) + `isAdmin` (un `computed` que da `true`/`false`) | El nombre `isAdmin` para algo que vale `'admin'`/`'user'` confunde |
+| `<ion-label position="stacked">` + `ion-input` | `<ion-input label="..." labelPlacement="stacked">` | Es la forma actual de Ionic (la otra está obsoleta) |
+| `ion-item-option (click)` sin más | Se pasa `#sliding` y se hace `sliding.close()` | Si no, el item se queda abierto después de editar/borrar |
+| Errores con `e.message` en inglés | `textoError(e)` | Mensajes claros: email repetido, sin permiso, contraseña mala |
+| Sin `ion-grid` | `ion-grid` con 2 columnas en escritorio | Lo pide el CE 4.a |
+
+## Preguntas para cuando lo estudies
+
+1. ¿Por qué un usuario `user` no puede borrar aunque fuerce la petición? → Por la política "Escritura solo para admins" (RLS).
+2. ¿Qué hace `.single()` en `loadRole`? → Devuelve un objeto (la fila del perfil) en vez de un array.
+3. ¿Para qué sirve `sessionReady` en el guard? → Para esperar a que se recupere la sesión guardada antes de decidir si te deja pasar.
+4. ¿Por qué hacen falta signals en este proyecto y en el PDF no? → Porque sin zone.js Angular solo repinta cuando cambia un signal (o hay un evento de la plantilla).
+5. ¿Qué diferencia hay entre `USING` y `WITH CHECK` en la política de escritura? → `USING` decide qué filas puedes tocar; `WITH CHECK` valida la fila resultante.

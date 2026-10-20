@@ -40,7 +40,7 @@
 |----|-----------|---------|---------|
 | 04 | Reactividad con Signals (carrito) | `04-Reactividad-Signals-Carrito/` | `04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` |
 | 05 | Lab TechTicket: Store + Signals + Android | `05-Lab-Reactividad-TechTicket/` | `05-Lab-Reactividad-TechTicket/00-teoria-y-apuntes.md` |
-| 06 | Supabase: login, perfiles y roles | `06-Supabase-Auth-Roles/` | `06-Supabase-Auth-Roles/00-teoria-y-apuntes.md` |
+| 06 | Supabase: login, perfiles y roles + Lab CRUD con roles | `06-Supabase-Auth-Roles/` (proyecto del lab en `dam-crm-app/`) | `06-Supabase-Auth-Roles/00-teoria-y-apuntes.md` → el Lab está al final ("Laboratorio · Gestión Completa CRUD") |
 | 07 | Formularios reactivos: alta de productos de inventario (19-10-2026) | `07-Formularios-Reactivos-Inventario/` (proyecto en `inventario-app/`) | `07-Formularios-Reactivos-Inventario/00-teoria-y-apuntes.md` → Reactive Forms §1–2, validadores §4, `.ts` §5, `.html` §6, guardado local §7, tests §8 |
 
 ---
