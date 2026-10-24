@@ -1,9 +1,39 @@
-<h1>Usuarios activos</h1>
+<!-- Barra superior con el título -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Usuarios activos</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-<p *ngIf="loading()">Cargando...</p>
+<ion-content class="ion-padding">
 
-<ul *ngIf="!loading()">
-  <li *ngFor="let user of users()">
-    <strong>{{ user.name }}</strong> — {{ user.email }}
-  </li>
-</ul>
+  <!-- SI está cargando → spinner; SI NO → la lista.
+       loading() lleva paréntesis porque es un signal: así se lee su valor. -->
+  @if (loading()) {
+    <div class="cargando">
+      <ion-spinner name="crescent"></ion-spinner>   <!-- ruedita de "cargando" -->
+      <p>Cargando usuarios…</p>
+    </div>
+  } @else {
+
+    <!-- Lista de Ionic: una fila (ion-item) por cada usuario.
+         track user.id le dice a Angular cómo distinguir cada fila al repintar. -->
+    <ion-list>
+      @for (user of users(); track user.id) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ user.name }}</h2>     <!-- texto grande -->
+            <p>{{ user.email }}</p>      <!-- texto pequeño y gris -->
+          </ion-label>
+          <ion-badge slot="end" color="success">Activo</ion-badge>  <!-- etiqueta verde a la derecha -->
+        </ion-item>
+      } @empty {
+        <!-- @empty: se enseña si la lista no tiene ningún usuario -->
+        <ion-item>
+          <ion-label>No hay usuarios activos.</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+
+  }
+</ion-content>

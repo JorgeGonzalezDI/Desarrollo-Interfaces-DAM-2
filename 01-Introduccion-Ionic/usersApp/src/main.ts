@@ -1,6 +1,16 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
-import { App } from './app/app';
+import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } from '@angular/router';
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 
-bootstrapApplication(App, appConfig)
-  .catch((err) => console.error(err));
+import { routes } from './app/app.routes';
+import { AppComponent } from './app/app.component';
+
+// Punto de entrada: arranca la app con AppComponent como raíz.
+// providers = servicios disponibles para toda la app.
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicAngular(),   // activa los componentes de Ionic
+    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),   // registra la tabla de rutas de app.routes.ts
+  ],
+});

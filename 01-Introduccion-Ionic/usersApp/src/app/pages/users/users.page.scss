@@ -1,0 +1,7 @@
+/* Spinner y texto centrados, uno debajo del otro, separados del borde superior */
+.cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
