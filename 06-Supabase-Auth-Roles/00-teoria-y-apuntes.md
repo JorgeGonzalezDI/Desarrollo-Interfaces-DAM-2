@@ -1,5 +1,7 @@
 # 06 · Supabase + Angular: login, perfiles y roles (lo de ahora en clase)
 
+> **Ordenado en la guía de estudio** (`00-Apuntes/01-guia-de-estudio-desde-cero.md`, o el PDF `00-Apuntes/Interfaces_Movil.pdf`): la teoría de Supabase en §A10 y la ficha con el mapa (dossier + Lab CRUD) en §B6.
+
 ## Dónde está la teoría
 
 | Qué | Dónde |
@@ -13,7 +15,7 @@
 | · El servicio `supabase.service.ts` | Dossier, págs. 6–8 |
 | · El guard `auth.guard.ts` | Dossier, pág. 8 |
 | Signals y patrón Store (lo que usa el servicio) | `../04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` y `../05-Lab-Reactividad-TechTicket/00-teoria-y-apuntes.md` |
-| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §3.10 (`async/await`), §5.3 (`[(ngModel)]` para el login), §5.8 (rutas), §5.9 (`inject`), §15.3 (por qué con `HttpClient` NO se usa `async/await`) |
+| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §A3.10 (`async/await`), §A5.3 (`[(ngModel)]` para el login), §A5.8 (rutas), §A5.9 (`inject`), §A7.3 (por qué con `HttpClient` NO se usa `async/await`) |
 
 **Carpeta:** `C:\DAM 2\Desarrollo de Interfaces\06-Supabase-Auth-Roles\`. Aquí van el dossier, este fichero y el proyecto cuando lo crees. También está en `00-Apuntes/Interfaces_Movil.pdf` (Parte 1).
 
@@ -288,7 +290,7 @@ const { data: { session } } = await this.supabase.auth.getSession();
 // Java: Session session = respuesta.getData().getSession();
 ```
 
-**Aquí SÍ hay `async/await`.** Con `HttpClient` usabas `subscribe` porque devuelve Observables (guía §15.3). La librería de Supabase devuelve **Promises**, así que se usa `await` (guía §3.10).
+**Aquí SÍ hay `async/await`.** Con `HttpClient` usabas `subscribe` porque devuelve Observables (guía §A7.3). La librería de Supabase devuelve **Promises**, así que se usa `await` (guía §A3.10).
 
 **`{ data, error }` en vez de excepciones:**
 
@@ -318,12 +320,12 @@ static Predicate<Usuario> tieneRol(String rol) {
 }
 ```
 
-- Dentro usa `inject()` para pedir el servicio y el router (guía §5.9).
+- Dentro usa `inject()` para pedir el servicio y el router (guía §A5.9).
 
 ## Paso 5 · Lo que el dossier no trae y vas a necesitar (pistas, lo haces tú)
 
-1. **Página de login**: dos `ion-input` con `[(ngModel)]` (guía §5.3) y un botón con `(click)="entrar()"`. Dentro, `try { await this.supabase.signIn(email, pass); navegar } catch (e) { mostrar error }`.
-2. **Rutas** en `app.routes.ts` (guía §5.8):
+1. **Página de login**: dos `ion-input` con `[(ngModel)]` (guía §A5.3) y un botón con `(click)="entrar()"`. Dentro, `try { await this.supabase.signIn(email, pass); navegar } catch (e) { mostrar error }`.
+2. **Rutas** en `app.routes.ts` (guía §A5.8):
 
 ```ts
 { path: 'login', loadComponent: () => ... },

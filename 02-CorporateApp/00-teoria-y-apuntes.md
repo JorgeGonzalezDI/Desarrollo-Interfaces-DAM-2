@@ -1,5 +1,7 @@
 # Tarea 02 — Corporate App (Ionic + Angular Standalone + Capacitor + GitHub + Vercel)
 
+> **Ordenado en la guía de estudio** (`00-Apuntes/01-guia-de-estudio-desde-cero.md`, o el PDF `00-Apuntes/Interfaces_Movil.pdf`): la ficha con el mapa y el código explicado en §B2; la teoría (rutas, servicios, inyección de dependencias) en §A5.
+
 **Alumno:** Jorge González Gómez
 **Módulo:** 0488 Desarrollo de Interfaces — 2º DAM (Nebrija)
 **Sesión de trabajo:** 02-10-2026 · **Entrega:** lunes 05-10-2026

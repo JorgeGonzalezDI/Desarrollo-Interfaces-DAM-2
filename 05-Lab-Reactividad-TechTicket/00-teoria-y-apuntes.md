@@ -1,5 +1,7 @@
 # 05 · Laboratorio TechTicket: estado reactivo (Store + Signals) y Android (entrega 09-10-2026)
 
+> **Ordenado en la guía de estudio** (`00-Apuntes/01-guia-de-estudio-desde-cero.md`, o el PDF `00-Apuntes/Interfaces_Movil.pdf`): el patrón Store en §A8.3–A8.4, Capacitor en §A11 y la ficha con el mapa en §B5.
+
 ## Dónde está la teoría
 
 | Qué | Dónde |
@@ -11,7 +13,7 @@
 | · El componente `TicketDashboard` | Lab, págs. 5–7 |
 | · Capacitor y Android | Lab, pág. 7 |
 | Signals (`signal`, `computed`, `update`) | `../04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` (léelo antes que este) |
-| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §5.7 (`ngOnInit`), §5.9 (servicios e inyección de dependencias), §14 (qué es una API REST), §15.4 (`subscribe` paso a paso), §15.7 (`provideHttpClient`) |
+| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §A5.7 (`ngOnInit`), §A5.9 (servicios e inyección de dependencias), §A6 (qué es una API REST), §A7.4 (`subscribe` paso a paso), §A7.7 (`provideHttpClient`) |
 
 ---
 
@@ -66,7 +68,7 @@ this.http.get<Ticket[]>(url).subscribe({
   error: ()         => this.state.update(s => ({ ...s, error: 'Error de red…', loading: false }))
 });
 ```
-`get` devuelve un Observable y no hace nada hasta que te suscribes (guía §15.4). `next` se ejecuta si va bien y `error` si falla.
+`get` devuelve un Observable y no hace nada hasta que te suscribes (guía §A7.4). `next` se ejecuta si va bien y `error` si falla.
 
 ## El componente, bloque a bloque
 
@@ -75,7 +77,7 @@ Archivo: `tech-ticket/src/app/features/ticket-dashboard/ticket-dashboard.compone
 - `public ticketService = inject(TicketService);` es **public** para poder usarlo en el template (`ticketService.isLoading()`).
 - `filtroActual = signal<'todos' | 'abiertos' | 'cerrados'>('todos')` usa un **tipo unión**: solo admite esos 3 textos.
 - `ticketsFiltrados = computed(...)` depende de **dos** signals, `tickets()` y `filtroActual()`. Cambia una cualquiera y se recalcula.
-- `ngOnInit()` se ejecuta una vez al crear el componente y lanza la carga (guía §5.7).
+- `ngOnInit()` se ejecuta una vez al crear el componente y lanza la carga (guía §A5.7).
 - `cambiarFiltro(event)`: el `<ion-segment>` lanza `ionChange` y el valor elegido viene en `event.detail.value`.
 
 Template:

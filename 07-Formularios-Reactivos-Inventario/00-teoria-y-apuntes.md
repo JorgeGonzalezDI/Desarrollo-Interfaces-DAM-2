@@ -1,5 +1,7 @@
 # 07 · Formularios reactivos en Ionic + Angular: alta de productos de inventario (19-10-2026)
 
+> **Ordenado en la guía de estudio** (`00-Apuntes/01-guia-de-estudio-desde-cero.md`, o el PDF `00-Apuntes/Interfaces_Movil.pdf`): la teoría de formularios en §A9 y la ficha con el mapa y el código en §B7.
+
 ## Dónde está la teoría
 
 | Qué | Dónde |
@@ -14,7 +16,7 @@
 | · **El ejercicio (inventario)** | Dossier, pág. 8 |
 | Signals (`signal`, `set`, `computed`) | `../04-Reactividad-Signals-Carrito/00-teoria-y-apuntes.md` |
 | Servicio con estado privado y solo lectura (patrón Store) | `../05-Lab-Reactividad-TechTicket/00-teoria-y-apuntes.md` → "El servicio, bloque a bloque" |
-| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §3.10 (`async/await`), §5.3 (data binding; en el 4) está `[(ngModel)]`, que es lo "otro" tipo de formulario), §5.4 (`@if` / `@for`), §5.6 (signals), §5.9 (servicios e `inject`) |
+| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §A3.10 (`async/await`), §A5.3 (data binding; en el 4) está `[(ngModel)]`, que es lo "otro" tipo de formulario), §A5.4 (`@if` / `@for`), §A5.6 (signals), §A5.9 (servicios e `inject`) |
 
 **Carpeta:** `C:\DAM 2\Desarrollo de Interfaces\07-Formularios-Reactivos-Inventario\`
 
@@ -268,7 +270,7 @@ protected async guardar(): Promise<void> {
   }
 }
 ```
-- `await` espera a que el servicio termine (1,5 s). Aquí sí se usa `async/await` porque `Preferences` devuelve **Promesas**, no Observables (al revés que `HttpClient`, guía §15.3).
+- `await` espera a que el servicio termine (1,5 s). Aquí sí se usa `async/await` porque `Preferences` devuelve **Promesas**, no Observables (al revés que `HttpClient`, guía §A7.3).
 - Antes de guardar se **limpian los datos**: SKU en mayúsculas, nombre sin espacios a los lados, stock como número.
 - `form.reset()` vacía los campos **y** quita el "tocado", así no salen errores en el formulario vacío.
 - `try / catch / finally`: `try` = lo normal; `catch` = si algo falla; `finally` = **se ejecuta siempre**, falle o no. Por eso `guardando.set(false)` va ahí: pase lo que pase, el formulario se reactiva. Si lo pusieras dentro del `try` y fallara el guardado, el formulario se quedaría bloqueado para siempre.
@@ -347,7 +349,7 @@ protected mensajeError(campo: Campo): string {
 </ion-select>
 ```
 - `interface="action-sheet"` → las opciones salen en una hoja desde abajo (cómoda con el pulgar). Otras opciones: `alert` (la de por defecto) o `popover`.
-- El `@for` recorre `CATEGORIAS` del modelo. `track categoria` le dice a Angular cómo distinguir cada opción (guía §5.4).
+- El `@for` recorre `CATEGORIAS` del modelo. `track categoria` le dice a Angular cómo distinguir cada opción (guía §A5.4).
 
 ### 6.4 El número
 
@@ -499,7 +501,7 @@ npm test        # o: ng test --watch=false  →  10 tests OK
 7. **¿Por qué `guardando.set(false)` va en `finally`?** Porque `finally` se ejecuta siempre: si el guardado falla, el formulario también se reactiva.
 8. **¿Qué hace el `effect` del constructor?** Se vuelve a ejecutar cada vez que cambia `guardando`, y desactiva o activa el formulario según su valor.
 9. **¿Dónde guarda Capacitor Preferences en el navegador? ¿Y en Android?** En `localStorage`; en Android, en `SharedPreferences`.
-10. **¿Por qué se usa `async/await` con Preferences y no con `HttpClient`?** Porque Preferences devuelve Promesas y `HttpClient` devuelve Observables (guía §15.3).
+10. **¿Por qué se usa `async/await` con Preferences y no con `HttpClient`?** Porque Preferences devuelve Promesas y `HttpClient` devuelve Observables (guía §A7.3).
 
 ---
 

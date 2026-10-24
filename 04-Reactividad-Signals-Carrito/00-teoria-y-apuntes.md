@@ -1,5 +1,7 @@
 # 04 · Reactividad con Signals: el carrito (Seguimiento, entrega 10-10-2026)
 
+> **Ordenado en la guía de estudio** (`00-Apuntes/01-guia-de-estudio-desde-cero.md`, o el PDF `00-Apuntes/Interfaces_Movil.pdf`): la teoría de signals en §A8.1–A8.2 y la ficha con el mapa en §B4.
+
 ## Dónde está la teoría
 
 | Qué | Dónde |
@@ -11,7 +13,7 @@
 | · `OnPush` y por qué se usa `update()` con `...` | Dossier, pág. 6 |
 | · `computed()` y `effect()` por dentro | Dossier, pág. 7 |
 | · `@for` y `track` | Dossier, pág. 8 |
-| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §5.3 (binding `{{ }}` y `(click)`), §5.4 (`@for`, `@if`), §5.6 (Signals) |
+| Tu guía de estudio | `00-Apuntes/01-guia-de-estudio-desde-cero.md` → §A5.3 (binding `{{ }}` y `(click)`), §A5.4 (`@for`, `@if`), §A5.6 (Signals) |
 
 ---
 
