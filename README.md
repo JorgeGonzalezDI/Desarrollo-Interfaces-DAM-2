@@ -19,7 +19,7 @@ se publican en **Vercel**.
 | Nº | Práctica | Qué se trabaja | Código | Demo |
 |----|----------|----------------|--------|------|
 | 01 | Introducción a Ionic | App Ionic standalone `usersApp`: modelo, servicio con `Promise` y `async/await`, página con `ion-list`, `ion-spinner` e `ion-badge`, `inject()` y signals. Paradigmas asíncronos de JavaScript (`.then()`, `async/await`, callbacks). | [`01-Introduccion-Ionic`](01-Introduccion-Ionic) | — |
-| 02 | Corporate App | App Ionic standalone con menú, rutas *lazy*, productos desde JSON, servicio con **inyección de dependencias**, campo vendedor en el grid. | [`02-CorporateApp`](02-CorporateApp) | [desarrollo-interfaces-dam-2.vercel.app](https://desarrollo-interfaces-dam-2.vercel.app) |
+| 02 | Corporate App | App Ionic standalone con menú, rutas *lazy*, productos desde JSON, servicio con **inyección de dependencias**, campo vendedor en el grid, **geolocalización** con distancia a la oficina (Haversine) y **formulario de contacto** con persistencia local (Capacitor Preferences). | [`02-CorporateApp`](02-CorporateApp) | [desarrollo-interfaces-dam-2.vercel.app](https://desarrollo-interfaces-dam-2.vercel.app) |
 | 03 | API REST de productos | Consumo de `dummyjson.com/products` con `HttpClient` y Observables, tabla de productos, flujo de ramas `desarrollo` → `main`. | [`03-API-REST-Productos`](03-API-REST-Productos) | En el PDF de entrega |
 | 04 | Reactividad con Signals | Carrito reactivo con `signal`, `computed` y `effect`. | [`04-Reactividad-Signals-Carrito`](04-Reactividad-Signals-Carrito) | — |
 | 05 | Lab TechTicket | Patrón *Store* con signals, `HttpClient`, estados cargando / error / datos, filtros con `ion-segment` y empaquetado Android con Capacitor. | [`05-Lab-Reactividad-TechTicket`](05-Lab-Reactividad-TechTicket) | — |
@@ -38,6 +38,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 | Práctica | Fecha | Qué cambia respecto a la entregada |
 |---|---|---|
 | 01 · `usersApp` | 24-10-2026 | Pasa de proyecto Angular sin Ionic a **app Ionic standalone** con `ion-list`, `ion-spinner` e `ion-badge`. El servicio se declara con `@Service()` (Angular 22) y la página lo recibe con **`inject()`** en lugar de por el constructor. El estado (la lista y "cargando") va en **`signal()`**, necesario en una app sin zone.js para que la vista se actualice tras un `await`. La carga usa `try / catch / finally` y la plantilla `@if` / `@for` / `@empty`. Código comentado. |
+| 02 · `corporateApp` | 25-10-2026 | Se completa lo que faltaba de la práctica: **Nosotros** pide la ubicación con `@capacitor/geolocation` y calcula la distancia a la oficina con la fórmula de **Haversine**; **Contacto** tiene un formulario (`ngModel` sobre `signal`) y guarda los mensajes con `@capacitor/preferences`. El servicio de productos pasa a `@Service()` con **`inject()`** y el estado va en **`signal()`**; las plantillas usan `@for` / `@if` / `@empty`. Código comentado. |
 
 ## Estructura
 
@@ -46,7 +47,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 ├── 01-Introduccion-Ionic/
 │   ├── usersApp/                        App Ionic: lista de usuarios activos
 │   └── paradigmas-js/                   fetch .then(), async/await y XMLHttpRequest
-├── 02-CorporateApp/corporateApp/        App corporativa con menú y productos (Vercel)
+├── 02-CorporateApp/corporateApp/        App corporativa: menú, productos, geolocalización y contacto (Vercel)
 ├── 03-API-REST-Productos/dam2-productos/        Consumo de API REST con HttpClient
 ├── 04-Reactividad-Signals-Carrito/carrito-signals/
 ├── 05-Lab-Reactividad-TechTicket/tech-ticket/   + proyecto Android (Capacitor)
@@ -82,10 +83,11 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**22 commits** en **9 días de trabajo**, del 25-09-2026 al 24-10-2026 (lo más reciente arriba).
+**23 commits** en **10 días de trabajo**, del 25-09-2026 al 25-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
+| **25-10-2026** | 17:54 | Corporate App: rehecha a mano con geolocalizacion (Haversine) y contacto con Preferences (codigo comentado) |
 | **24-10-2026** | 22:01 | Ionic Intro: usersApp rehecha con componentes de Ionic, inject() y signals (codigo comentado) |
 |  | 21:42 | Apuntes: guia reorganizada en teoria (Parte A) y practicas (Parte B) |
 | **20-10-2026** | 19:01 | Supabase: Lab CRUD con roles + capturas |
