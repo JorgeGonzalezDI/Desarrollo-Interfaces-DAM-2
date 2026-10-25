@@ -1,5 +1,7 @@
 {
   "name": "corporateApp",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular-standalone"
 }

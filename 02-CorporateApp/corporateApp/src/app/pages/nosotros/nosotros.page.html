@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
@@ -8,5 +8,23 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Pendiente: se desarrolla en los siguientes puntos de la práctica -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Nuestra empresa</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p>Empresa especializada en soluciones basadas en Angular, Ionic y Node.js.</p>
+
+      <!-- Tres estados posibles. distancia() y error() son signals: se leen con paréntesis. -->
+      @if (distancia() !== null) {
+        <!-- el "!" indica a TypeScript que aquí no es null; toFixed(1) deja un decimal -->
+        <p>Distancia a nuestras oficinas: {{ distancia()!.toFixed(1) }} km</p>
+      } @else if (error()) {
+        <p>{{ error() }}</p>
+      } @else {
+        <p>Calculando distancia…</p>
+      }
+    </ion-card-content>
+  </ion-card>
 </ion-content>

@@ -1,29 +1,30 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { NgFor } from '@angular/common';
-import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonGrid, IonRow, IonCol,
-} from '@ionic/angular';
-import { ProductsService } from '../../services/products.service';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonBackButton, IonGrid, IonRow, IonCol } from '@ionic/angular';
+import { Products } from '../../services/products';
 import { Product } from '../../models/product.interface';
 
+// PÁGINA Productos: pide la lista al servicio y la muestra en un ion-grid.
 @Component({
-  standalone: true,
   selector: 'app-productos',
   templateUrl: './productos.page.html',
   styleUrls: ['./productos.page.scss'],
-  imports: [NgFor, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonGrid, IonRow, IonCol],
+  // Componente standalone: cada componente de Ionic que use el HTML hay que listarlo aquí
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonBackButton, IonGrid, IonRow, IonCol]
 })
 export class ProductosPage implements OnInit {
-  // signal en vez de una propiedad normal: Angular 22 funciona sin zone.js
-  // y una propiedad asignada después de un await no refrescaría la vista.
+  // inject() pide a Angular el servicio (inyección de dependencias)
+  private productsService = inject(Products);
+
+  // signal: valor reactivo. Al hacer .set() la vista se actualiza sola,
+  // imprescindible en una app sin zone.js. En la plantilla se lee con paréntesis: products()
   products = signal<Product[]>([]);
 
-  // INYECCIÓN DE DEPENDENCIAS por constructor:
-  // la página no hace "new ProductsService()", solo lo pide como parámetro
-  // y Angular le entrega la instancia única registrada en 'root'.
-  constructor(private productService: ProductsService) {}
+  constructor() { }
 
+  // ngOnInit se ejecuta una vez al abrir la página: aquí cargamos los datos
   async ngOnInit() {
-    this.products.set(await this.productService.getProducts());
+    const lista = await this.productsService.getProducts();
+    this.products.set(lista);
   }
+
 }

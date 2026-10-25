@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
@@ -8,5 +8,40 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Pendiente: se desarrolla en los siguientes puntos de la práctica -->
+  <p>¿Tienes alguna pregunta? ¡Estamos aquí para ayudarte!</p>
+
+  <!-- [(ngModel)] = binding en los dos sentidos: lo que se escribe en el campo
+       actualiza el signal y, si el signal cambia, se actualiza el campo -->
+  <ion-item>
+    <ion-input label="Correo" labelPlacement="floating" type="email"
+               [(ngModel)]="correo"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-textarea label="Mensaje" labelPlacement="floating" [rows]="4"
+                  [(ngModel)]="mensaje"></ion-textarea>
+  </ion-item>
+
+  <!-- (click) = event binding: llama al método de la clase al pulsar -->
+  <ion-button expand="block" (click)="enviar()">Enviar</ion-button>
+
+  @if (enviado()) {
+    <p>✔ Mensaje guardado en el dispositivo.</p>
+  }
+
+  <h3>Mensajes guardados</h3>
+  <ion-list>
+    <!-- track $index: los mensajes no tienen id, se identifican por su posición -->
+    @for (m of guardados(); track $index) {
+      <ion-item>
+        <ion-label>
+          <h2>{{ m.correo }}</h2>
+          <p>{{ m.mensaje }}</p>
+          <p>{{ m.fecha }}</p>
+        </ion-label>
+      </ion-item>
+    } @empty {
+      <ion-item><ion-label>Aún no hay mensajes</ion-label></ion-item>
+    }
+  </ion-list>
 </ion-content>

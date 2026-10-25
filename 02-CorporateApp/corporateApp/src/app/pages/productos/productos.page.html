@@ -1,17 +1,20 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
+      <!-- Botón atrás; defaultHref es a dónde vuelve si no hay historial -->
       <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
     <ion-title>Productos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
+  <p>Descubre nuestra amplia gama de productos de material informático.</p>
 
+  <!-- ion-grid: tabla con filas (ion-row) y columnas (ion-col). size = columnas de 12 que ocupa -->
   <ion-grid>
-
-    <ion-row class="header">
+    <!-- Fila de títulos (fija) -->
+    <ion-row class="cabecera">
       <ion-col size="1">ID</ion-col>
       <ion-col size="2.5">Nombre</ion-col>
       <ion-col size="2.5">Vendedor</ion-col>
@@ -20,17 +23,26 @@
       <ion-col size="2.5">Foto</ion-col>
     </ion-row>
 
-    <ion-row *ngFor="let product of products()">
-      <ion-col size="1">{{ product.id }}</ion-col>
-      <ion-col size="2.5">{{ product.nombre }}</ion-col>
-      <ion-col size="2.5">{{ product.vendedor }}</ion-col>
-      <ion-col size="1.5">{{ product.unidades }}</ion-col>
-      <ion-col size="2">{{ product.precio }} €</ion-col>
-      <ion-col size="2.5">
-        <img [src]="product.foto" width="60" />
-      </ion-col>
-    </ion-row>
-
+    <!-- @for repite la fila por cada producto. "track" identifica cada elemento
+         (aquí por id) para que Angular no redibuje toda la lista al cambiar -->
+    @for (product of products(); track product.id) {
+      <ion-row>
+        <!-- {{ }} = interpolación: pinta el valor de la expresión -->
+        <ion-col size="1">{{ product.id }}</ion-col>
+        <ion-col size="2.5">{{ product.nombre }}</ion-col>
+        <ion-col size="2.5">{{ product.vendedor }}</ion-col>
+        <ion-col size="1.5">{{ product.unidades }}</ion-col>
+        <ion-col size="2">{{ product.precio }} €</ion-col>
+        <ion-col size="2.5">
+          <!-- [src] = property binding: asigna el valor de la expresión a la propiedad -->
+          <img [src]="product.foto" [alt]="product.nombre" />
+        </ion-col>
+      </ion-row>
+    } @empty {
+      <!-- se muestra mientras la lista está vacía (cargando) -->
+      <ion-row>
+        <ion-col>Cargando productos…</ion-col>
+      </ion-row>
+    }
   </ion-grid>
-
 </ion-content>

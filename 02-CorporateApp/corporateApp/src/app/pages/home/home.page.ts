@@ -1,16 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel,
-} from '@ionic/angular';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonSegment, IonSegmentButton, IonLabel } from '@ionic/angular';
 
+// PÁGINA Home: menú horizontal. No tiene lógica propia; la navegación la hace
+// routerLink en el HTML, por eso importamos RouterLink.
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  // Componente standalone: importa aquí todo lo que usa su plantilla.
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, IonLabel],
+  imports: [RouterLink, IonContent, IonHeader, IonTitle, IonToolbar, IonSegment, IonSegmentButton, IonLabel]
 })
-export class HomePage {
-  constructor() {}
+export class HomePage implements OnInit {
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+
 }

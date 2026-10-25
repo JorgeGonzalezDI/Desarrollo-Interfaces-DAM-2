@@ -1,13 +1,13 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>Corporate App</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-
+<ion-content class="ion-padding">
+  <!-- Menú horizontal: ion-segment coloca los botones en fila.
+       routerLink navega a la ruta indicada en app.routes.ts. -->
   <ion-segment>
-
     <ion-segment-button value="productos" routerLink="/productos">
       <ion-label>Productos</ion-label>
     </ion-segment-button>
@@ -19,7 +19,5 @@
     <ion-segment-button value="contacto" routerLink="/contacto">
       <ion-label>Contacto</ion-label>
     </ion-segment-button>
-
   </ion-segment>
-
 </ion-content>

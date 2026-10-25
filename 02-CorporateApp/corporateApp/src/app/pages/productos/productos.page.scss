@@ -1,17 +1,13 @@
 ion-row {
-  align-items: center;
-  border-bottom: 1px solid #ddd;
+  align-items: center;                                    /* centra verticalmente el texto con la foto */
+  border-bottom: 1px solid var(--ion-color-step-150, #ddd); /* línea separando filas */
 }
 
-.header {
+.cabecera {
   font-weight: bold;
 }
 
-ion-col {
-  overflow-wrap: anywhere;
-}
-
-.header ion-col {
-  font-size: 0.85rem;
-  overflow-wrap: normal;
+img {
+  width: 60px;
+  border-radius: 6px;
 }
