@@ -85,11 +85,12 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**28 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
+**29 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
-| **26-10-2026** | 18:03 | 03 API REST: version rehecha a mano con About, paginacion, modo oscuro y cards |
+| **26-10-2026** | 18:36 | 03 API REST: PDF de entrega final (10 peticiones, sin capturas) |
+|  | 18:03 | 03 API REST: version rehecha a mano con About, paginacion, modo oscuro y cards |
 |  | 13:11 | PDFs de entrega de 01, 02 y 08 sin capturas (el codigo esta en GitHub) |
 |  | 13:01 | Corporate App: PDF de entrega de la version final (geolocalizacion y contacto) + capturas |
 |  | 13:01 | Ionic Intro: PDF de entrega de la version final (usersApp) + capturas |
