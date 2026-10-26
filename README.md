@@ -86,11 +86,12 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**33 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
+**34 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
-| **26-10-2026** | 19:20 | 08 Lab Guards: PDF con mencion a la app general de repaso |
+| **26-10-2026** | 19:30 | 05 TechTicket: rehecha (servicio Store con signals, HttpClient, OnPush) + PDF |
+|  | 19:20 | 08 Lab Guards: PDF con mencion a la app general de repaso |
 |  | 19:20 | 07 Formularios reactivos: PDF de entrega sin capturas |
 |  | 19:20 | 06 Supabase: PDF de entrega sin capturas (el codigo esta en GitHub) |
 |  | 19:18 | README: revision de la practica 03 y descripcion actualizada; .gitignore ignora CLAUDE.md |
