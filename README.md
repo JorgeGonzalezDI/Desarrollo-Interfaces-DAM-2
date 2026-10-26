@@ -85,10 +85,11 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**23 commits** en **10 días de trabajo**, del 25-09-2026 al 25-10-2026 (lo más reciente arriba).
+**24 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
+| **26-10-2026** | 12:50 | Actividad 08: Lab Guards (authGuard, roleGuard y sesion en sessionStorage) + PDF de entrega y apuntes |
 | **25-10-2026** | 17:54 | Corporate App: rehecha a mano con geolocalizacion (Haversine) y contacto con Preferences (codigo comentado) |
 | **24-10-2026** | 22:01 | Ionic Intro: usersApp rehecha con componentes de Ionic, inject() y signals (codigo comentado) |
 |  | 21:42 | Apuntes: guia reorganizada en teoria (Parte A) y practicas (Parte B) |
