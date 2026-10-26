@@ -7,3 +7,6 @@
 # Sistema operativo
 Thumbs.db
 .DS_Store
+
+# Instrucciones locales de Claude Code (no van al repo de clase)
+CLAUDE.md
