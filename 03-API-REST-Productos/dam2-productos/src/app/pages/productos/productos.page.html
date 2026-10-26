@@ -1,45 +1,84 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
+      <!-- Botón de volver. defaultHref = a dónde va si no hay historial -->
       <ion-back-button defaultHref="/inicio"></ion-back-button>
     </ion-buttons>
     <ion-title>Productos</ion-title>
+    <!-- Petición 9: botón de modo oscuro -->
+    <ion-buttons slot="end">
+      <ion-button (click)="theme.toggle()">{{ theme.dark() ? '☀️' : '🌙' }}</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="ion-padding">           <!-- ion-padding: margen interior de Ionic -->
   <h1>Listado de productos</h1>
 
   <!-- Petición nº 3: botón para regresar a la página inicio -->
   <ion-button routerLink="/inicio" fill="outline">Volver a inicio</ion-button>
 
+  <!-- ESTADO 1: cargando. loading() con paréntesis porque es un signal -->
   @if (loading()) {
     <div class="loading">
-      <ion-spinner></ion-spinner>
+      <ion-spinner></ion-spinner>            <!-- aquí se dibuja la ruedecita -->
       <p>Cargando productos...</p>
     </div>
   }
 
+  <!-- ESTADO 2: error. Un texto no vacío cuenta como true -->
   @if (error()) {
     <ion-card>
       <ion-card-header>
         <ion-card-title>Error</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>{{ error() }}</p>
+        <p>{{ error() }}</p>                 <!-- interpolación: pinta el texto del signal -->
+        <!-- event binding: al hacer clic vuelve a pedir los datos -->
         <ion-button (click)="loadProducts()">Reintentar</ion-button>
       </ion-card-content>
     </ion-card>
   }
 
+  <!-- ESTADO 3: correcto. ! = NO, && = Y -->
   @if (!loading() && !error()) {
     <p>Productos cargados: <strong>{{ products().length }}</strong> de {{ total() }}</p>
 
+    <!-- Selector Cards / Tabla: [value] lee el signal, (ionChange) avisa al cambiar -->
+    <ion-segment [value]="vista()" (ionChange)="cambiarVista($event)">
+      <ion-segment-button value="cards"><ion-label>Cards</ion-label></ion-segment-button>
+      <ion-segment-button value="tabla"><ion-label>Tabla</ion-label></ion-segment-button>
+    </ion-segment>
+
+    @if (vista() === 'cards') {
+      <!-- Vista de tarjetas: una ion-card por producto, colocadas en una rejilla -->
+      <div class="cards-grid">
+        @for (product of products(); track product.id) {
+          <ion-card>
+            <img [src]="product.thumbnail" [alt]="product.title">
+            <ion-card-header>
+              <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
+              <ion-card-title>{{ product.title }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p class="precio">
+                {{ product.price | currency:'EUR' }}
+                <ion-badge color="danger">-{{ product.discountPercentage | number:'1.0-0' }}%</ion-badge>
+              </p>
+              <p>{{ product.brand || 'Sin marca' }} · ⭐ {{ product.rating }}</p>
+              <p>Stock: {{ product.stock }} ud.</p>
+              <p>{{ product.dimensions.width | number:'1.0-2' }} × {{ product.dimensions.height | number:'1.0-2' }} cm</p>
+              <p>Stock valorado: <strong>{{ stockValorado(product) | currency:'EUR' }}</strong></p>
+            </ion-card-content>
+          </ion-card>
+        }
+      </div>
+    } @else {
     <div class="table-container">
       <table>
-        <thead>
-          <tr>
-            <th>ID</th>
+        <thead>                              <!-- cabecera de la tabla -->
+          <tr>                               <!-- tr = fila -->
+            <th>ID</th>                      <!-- th = celda de cabecera -->
             <th>Producto</th>
             <th>Categoría</th>
             <th>Marca</th>
@@ -50,31 +89,36 @@
             <th>Stock valorado</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody>                              <!-- cuerpo: una fila por producto -->
+          <!-- @for recorre la lista. track = identifica cada fila por su id -->
           @for (product of products(); track product.id) {
             <tr>
-              <td>{{ product.id }}</td>
+              <td>{{ product.id }}</td>      <!-- td = celda normal -->
               <td>
                 <div class="product">
-                  <img [src]="product.thumbnail" [alt]="product.title" />
+                  <!-- [src] y [alt] entre corchetes = property binding: valor dinámico -->
+                  <img [src]="product.thumbnail" [alt]="product.title">
                   <span>{{ product.title }}</span>
                 </div>
               </td>
               <td>{{ product.category }}</td>
-              <td>{{ product.brand || 'Sin marca' }}</td>
-              <td>{{ product.price | currency: 'EUR' }}</td>
+              <td>{{ product.brand || 'Sin marca' }}</td>   <!-- si no hay marca, 'Sin marca' -->
+              <td>{{ product.price | currency:'EUR' }}</td>  <!-- pipe: da formato de moneda -->
               <td>⭐ {{ product.rating }}</td>
               <td>{{ product.stock }}</td>
-              <!-- Petición nº 1: dimensiones de ancho y alto -->
               <td>{{ product.dimensions.width | number: '1.0-2' }} × {{ product.dimensions.height | number: '1.0-2' }}</td>
-              <!-- Petición nº 2: stock valorado (unidades * precio - descuento) -->
               <td>{{ stockValorado(product) | currency: 'EUR' }}</td>
             </tr>
           }
         </tbody>
       </table>
     </div>
-  }
+    }
 
-  <!-- PENDIENTE (petición 6): paginación -->
+    <div class="paginacion">
+      <ion-button fill="outline" [disabled]="pagina() === 1" (click)="anterior()">Anterior</ion-button>
+      <span>Página {{ pagina() }} de {{ totalPaginas() }}</span>
+      <ion-button fill="outline" [disabled]="pagina() >= totalPaginas()" (click)="siguiente()">Siguiente</ion-button>
+    </div>
+  }
 </ion-content>

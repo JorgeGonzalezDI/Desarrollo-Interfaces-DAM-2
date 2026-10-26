@@ -1,20 +1,19 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
 import { ProductsResponse } from '../models/product.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ProductService {
-  // Inyección de dependencias con inject() (equivale a usar el constructor)
+
   private http = inject(HttpClient);
 
   private apiUrl = 'https://dummyjson.com/products';
 
-  // Devuelve un Observable: la petición NO se envía hasta que alguien se suscribe
-  getProducts(): Observable<ProductsResponse> {
-    return this.http.get<ProductsResponse>(this.apiUrl);
+  // NUEVO: limit = cuántos productos pide, skip = cuántos se salta desde el principio.
+  // Los valores por defecto (10 y 0) hacen que getProducts() sin nada siga funcionando.
+  getProducts(limit = 10, skip = 0): Observable<ProductsResponse> {
+    // { params: { limit, skip } } → Angular lo convierte en ?limit=10&skip=0 al final de la URL
+    return this.http.get<ProductsResponse>(this.apiUrl, { params: { limit, skip } });
   }
 }

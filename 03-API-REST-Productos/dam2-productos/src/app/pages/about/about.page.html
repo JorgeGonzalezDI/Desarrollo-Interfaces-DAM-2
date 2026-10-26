@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/inicio"></ion-back-button>
+    </ion-buttons>
+    <ion-title>About</ion-title>
+    <!-- Petición 9: botón de modo oscuro -->
+    <ion-buttons slot="end">
+      <ion-button (click)="theme.toggle()">{{ theme.dark() ? '☀️' : '🌙' }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Petición 4: página About con una reseña y un enlace a GitHub -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Reseña de la aplicación</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>
+        Aplicación hecha con Ionic 9 y Angular 22 (standalone) para la asignatura de Desarrollo
+        de Interfaces. Consume la API REST pública de dummyjson con <strong>HttpClient</strong> y
+        muestra los productos con estados de carga y error, usando signals para que la pantalla
+        se actualice sola.
+      </p>
+      <p>
+        Con ella he practicado servicios con <code>inject()</code>, modelos tipados, rutas con
+        carga perezosa, control de flujo con <code>&#64;if</code> / <code>&#64;for</code> y el
+        modo oscuro de Ionic.
+      </p>
+      <!-- target="_blank" abre el enlace en una pestaña nueva; rel evita que la nueva pestaña controle esta -->
+      <p>
+        Código fuente y resto de prácticas:
+        <a href="https://github.com/JorgeGonzalezDI" target="_blank" rel="noopener">github.com/JorgeGonzalezDI</a>
+      </p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

@@ -5,7 +5,6 @@ export interface Dimensions {
   depth: number;   // fondo
 }
 
-// Un producto tal y como lo devuelve https://dummyjson.com/products
 export interface Product {
   id: number;
   title: string;
@@ -15,15 +14,15 @@ export interface Product {
   discountPercentage: number;
   rating: number;
   stock: number;
-  brand?: string;          // opcional: algunos productos no traen marca
+  brand?: string;          // CAMBIO: el ? = "opcional": algunos productos no traen marca
   thumbnail: string;
-  dimensions: Dimensions;  // petición del cliente nº 1
+  dimensions: Dimensions;  // NUEVO: petición 1
 }
 
 // La API no devuelve un array directamente, sino un objeto que lo envuelve
 export interface ProductsResponse {
-  products: Product[];
-  total: number;
-  skip: number;
-  limit: number;
+  products: Product[];   // la lista de productos
+  total: number;         // cuántos productos hay en total en la API (194)
+  skip: number;          // cuántos se ha saltado (lo usaremos para paginar)
+  limit: number;         // cuántos devuelve por petición (30 por defecto)
 }

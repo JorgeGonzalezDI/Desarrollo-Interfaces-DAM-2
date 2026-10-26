@@ -1,12 +1,12 @@
 # 03 · Actividad guiada — Ionic + Angular Standalone: consumo de API REST
 
 App Ionic + Angular standalone que consume `https://dummyjson.com/products` con `HttpClient`
-(Observables) y muestra los productos en una tabla.
+(Observables) y muestra los productos en una tabla o en cards, con paginación y modo oscuro.
 
 - Proyecto: [`dam2-productos/`](dam2-productos)
 - Flujo de ramas: se trabaja en `desarrollo` y, cuando está validado, se pasa a `main` (Vercel publica `main`).
 
-## Estado (entrega parcial, se irá actualizando durante la semana)
+## Estado (todas las peticiones hechas)
 
 | Nº | Petición | Estado |
 |----|----------|--------|
@@ -14,13 +14,13 @@ App Ionic + Angular standalone que consume `https://dummyjson.com/products` con 
 | 1 | Dimensiones ancho y alto en la tabla | Hecho |
 | 2 | Stock valorado (unidades × precio − descuento) | Hecho |
 | 3 | Botón para regresar a inicio | Hecho |
-| 4 | Página About con reseña y enlace a GitHub | Pendiente |
+| 4 | Página About con reseña y enlace a GitHub | Hecho |
 | 5 | Troubleshooting (2 ejemplos) | Hecho (en el PDF) |
-| 6 | Paginación | Pendiente |
+| 6 | Paginación (limit y skip, botones Anterior/Siguiente) | Hecho |
 | 7 | Por qué existe `app.config.ts` | Hecho (en el PDF) |
 | 8 | Flujo `desarrollo` → `main` y Vercel desde `main` | Hecho |
-| 9 | Botón modo oscuro | Pendiente |
-| 10 | Vista más visual que una tabla (cards/dashboard) | Pendiente |
+| 9 | Botón modo oscuro | Hecho |
+| 10 | Vista más visual que una tabla (cards/dashboard) | Hecho (cards, con selector Cards/Tabla) |
 
 ## Ejecutar
 
