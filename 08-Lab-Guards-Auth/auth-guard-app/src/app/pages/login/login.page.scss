@@ -1,0 +1,15 @@
+// Aviso de "ruta protegida" encima del formulario
+.aviso {
+  display: block;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(var(--ion-color-warning-rgb), 0.15);
+}
+
+// Texto pequeño con los usuarios de prueba
+.pista {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}

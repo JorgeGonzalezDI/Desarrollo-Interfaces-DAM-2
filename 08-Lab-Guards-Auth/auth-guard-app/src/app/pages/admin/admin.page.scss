@@ -1,0 +1,11 @@
+// Caja tipo "consola" para enseñar el JSON guardado en sessionStorage
+.json {
+  margin: 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: #9cdcfe;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

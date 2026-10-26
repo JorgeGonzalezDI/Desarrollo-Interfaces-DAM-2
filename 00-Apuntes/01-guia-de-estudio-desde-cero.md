@@ -71,6 +71,7 @@ para repasar.
 - [B5. Práctica 5 · Lab TechTicket: el patrón Store con signals + Android](#b5-práctica-5--lab-techticket-el-patrón-store-con-signals--android)
 - [B6. Práctica 6 · Supabase: login, perfiles y roles + Lab CRUD con roles](#b6-práctica-6--supabase-login-perfiles-y-roles--lab-crud-con-roles)
 - [B7. Práctica 7 · Formularios reactivos: alta de productos de inventario](#b7-práctica-7--formularios-reactivos-alta-de-productos-de-inventario)
+- [B8. Práctica 8 · Lab Guards: control de acceso y protección de rutas](#b8-práctica-8--lab-guards-control-de-acceso-y-protección-de-rutas)
 
 ---
 
@@ -5387,3 +5388,67 @@ ionic serve      # http://localhost:8100/nuevo-producto
 npm test         # tests de los validadores
 ```
 Para verlo como en el móvil: F12 → icono de móvil (Ctrl + Shift + M).
+
+---
+
+## B8. Práctica 8 · Lab Guards: control de acceso y protección de rutas
+
+### Ficha
+
+| | |
+|---|---|
+| Qué se entregó | "Guía Práctica de Laboratorio: Control de Acceso y Protección de Rutas con Ionic, Angular Standalone y Functional Guards" + implementaciones propuestas (apartado 4: roles y `roleGuard`). 26-10-2026. |
+| Carpeta | `08-Lab-Guards-Auth\` (README con la tabla requisito → fichero) |
+| Proyecto | `08-Lab-Guards-Auth\auth-guard-app` |
+| Entrega | `Entrega-Lab-Guards.pdf` (3 págs.) + `capturas\` (9 capturas) |
+| PDF del profe | `Lab_Guards.pdf` (12 págs.): objetivos (RA1, CE 1.b–1.e) pág. 1 · **teoría** (functional guards, `UrlTree`, ciclo de vida al recargar) pág. 2 · paso 1 crear proyecto pág. 3 · paso 2 `AuthService` págs. 4–5 · paso 3 `authGuard` pág. 6 · paso 4 rutas pág. 7 · paso 5 login págs. 8–9 · paso 6 admin págs. 10–11 · verificación con DevTools págs. 11–12 · **el ejercicio** (apartado 4) pág. 12 |
+| Explicación completa | `08-Lab-Guards-Auth\00-teoria-y-apuntes.md` (conceptos §2, estructura §3, código archivo a archivo §4, capturas §5, preguntas tipo examen §7) |
+| Tu versión a mano | Pendiente |
+| Teoría que usa | §A5 (rutas, servicios e `inject`, signals) · §A8 (patrón Store: estado en un servicio con signals) · §A10 (Supabase: roles, la versión "de verdad" con servidor) |
+
+| Fichero del proyecto | Para qué |
+|---|---|
+| `src/app/core/services/auth.service.ts` | Usuarios `admin/123` y `operador/123`, sesión en signal + `sessionStorage` |
+| `src/app/core/guards/auth.guard.ts` | ¿Hay sesión? Si no → `UrlTree` a `/login?returnUrl=…` |
+| `src/app/core/guards/role.guard.ts` | Factoría `roleGuard(rol)`: si el rol no vale → a su panel con `?denegado=…` |
+| `src/app/app.routes.ts` | Lazy loading + `canActivate` en `admin` y `user-dashboard` |
+| `src/app/pages/login/` | Formulario con `ngModel`, aviso de ruta protegida |
+| `src/app/pages/admin/` | Panel solo para rol `admin` |
+| `src/app/pages/user-dashboard/` | Panel del operador (rol `user`), aviso de acceso denegado |
+
+### Mapa en 10 minutos
+
+**Qué construyes:** un login con dos usuarios (admin y operador) y dos paneles. Nadie sin sesión puede entrar a
+los paneles escribiendo la URL, y el operador no puede entrar al de admin.
+
+- La sesión se guarda en **dos sitios**: un `signal` (para que la pantalla reaccione) y `sessionStorage` (para que sobreviva a un F5 o a escribir la URL a mano, que recargan la app entera).
+- Una **guarda** es una función que el router ejecuta **antes** de cargar la página. Devuelve `true` (pasa) o un `UrlTree` (redirige).
+- `roleGuard('admin')` es una **factoría**: una función que devuelve una guarda configurada con ese rol.
+
+```
+escribe /admin ─► la app se recarga ─► AuthService lee sessionStorage ─► router: ruta 'admin'
+                                                                           │
+                       authGuard: ¿sesión? ── no ──► UrlTree /login?returnUrl=/admin
+                           │ sí
+                       roleGuard('admin'): ¿rol admin? ── no ──► UrlTree /user-dashboard?denegado=/admin
+                           │ sí
+                       carga AdminPage
+```
+
+**Orden de trabajo:**
+
+1. Crear el proyecto (`ionic start ... blank --type=angular-standalone`) y generar servicio, guarda y páginas (pág. 3).
+2. `AuthService` con un solo usuario (págs. 4–5) y comprobar en DevTools que se crea la clave.
+3. `authGuard` (pág. 6) y rutas (pág. 7).
+4. Login (págs. 8–9) y admin (págs. 10–11).
+5. Pruebas de la pág. 11–12: F5 en `/admin`, cerrar sesión, escribir `/admin` a mano.
+6. Apartado 4: segundo usuario con rol `user`, página `user-dashboard`, `roleGuard` y probar que el operador no entra a `/admin`.
+
+### Ejecutar
+
+```bash
+cd auth-guard-app
+npm install
+ionic serve      # http://localhost:8100  (admin/123 u operador/123)
+```
+DevTools: F12 → Application → Session Storage → `http://localhost:8100` → `DAM2_AUTH_SESSION`.

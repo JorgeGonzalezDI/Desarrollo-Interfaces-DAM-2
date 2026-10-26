@@ -25,6 +25,7 @@ se publican en **Vercel**.
 | 05 | Lab TechTicket | Patrón *Store* con signals, `HttpClient`, estados cargando / error / datos, filtros con `ion-segment` y empaquetado Android con Capacitor. | [`05-Lab-Reactividad-TechTicket`](05-Lab-Reactividad-TechTicket) | — |
 | 06 | Supabase: login y roles | Autenticación, tabla de perfiles con rol, seguridad RLS y CRUD de clientes solo para administradores. | [`06-Supabase-Auth-Roles`](06-Supabase-Auth-Roles) | — |
 | 07 | Formularios reactivos | Alta de productos de inventario: Reactive Forms, validadores personalizados, signal que bloquea el formulario mientras guarda, `ion-toast` y guardado local con Capacitor Preferences. | [`07-Formularios-Reactivos-Inventario`](07-Formularios-Reactivos-Inventario) | — |
+| 08 | Lab Guards: control de acceso | Login con dos roles, sesión en un signal persistida en `sessionStorage`, **functional guards** (`authGuard`) que redirigen con `UrlTree` y factoría `roleGuard(rol)` para que el operador no entre en `/admin`. | [`08-Lab-Guards-Auth`](08-Lab-Guards-Auth) | — |
 
 Cada carpeta contiene el proyecto (la carpeta con `package.json`), el PDF entregado y `capturas/`.
 La mayoría incluye también un `README.md` con la tabla requisito → fichero y
@@ -53,6 +54,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 ├── 05-Lab-Reactividad-TechTicket/tech-ticket/   + proyecto Android (Capacitor)
 ├── 06-Supabase-Auth-Roles/dam-crm-app/
 ├── 07-Formularios-Reactivos-Inventario/inventario-app/
+├── 08-Lab-Guards-Auth/auth-guard-app/
 └── actualizar-registro.mjs              Regenera el registro de trabajo de este README
 ```
 

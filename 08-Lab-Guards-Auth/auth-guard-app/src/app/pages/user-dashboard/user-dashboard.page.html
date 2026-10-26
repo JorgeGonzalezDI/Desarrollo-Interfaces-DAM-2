@@ -1,0 +1,38 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="tertiary">
+    <ion-title>Panel de Operador</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="handleLogout()">Cerrar Sesión</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Aviso cuando roleGuard nos ha redirigido aquí por no tener el rol necesario -->
+  @if (denegado()) {
+    <ion-note color="danger" class="denegado">
+      Acceso denegado a <strong>{{ denegado() }}</strong>: tu rol (<code>{{ currentSession()?.role }}</code>)
+      no tiene permiso. <code>roleGuard('admin')</code> te ha redirigido a tu panel.
+    </ion-note>
+  }
+
+  <ion-card color="light">
+    <ion-card-header>
+      <ion-card-title>Hola, {{ currentSession()?.username }}</ion-card-title>
+      <ion-card-subtitle>Rol: {{ currentSession()?.role }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Estás en <code>/user-dashboard</code>, protegida con <code>authGuard</code>.</p>
+      <p>La zona <code>/admin</code> solo admite el rol <code>admin</code>.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-subtitle>sessionStorage · DAM2_AUTH_SESSION</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <pre class="json">{{ storage() ?? '(vacío)' }}</pre>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
