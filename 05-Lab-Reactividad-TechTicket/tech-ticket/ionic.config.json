@@ -1,0 +1,8 @@
+{
+  "name": "tech-ticket",
+  "app_id": "io.ionic.techticket",
+  "type": "angular-standalone",
+  "integrations": {
+    "capacitor": {}
+  }
+}
