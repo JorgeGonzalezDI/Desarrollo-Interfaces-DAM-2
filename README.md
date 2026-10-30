@@ -26,6 +26,7 @@ se publican en **Vercel**.
 | 06 | Supabase: login y roles | Autenticación, tabla de perfiles con rol, seguridad RLS y CRUD de clientes solo para administradores. | [`06-Supabase-Auth-Roles`](06-Supabase-Auth-Roles) | — |
 | 07 | Formularios reactivos | Alta de productos de inventario: Reactive Forms, validadores personalizados, signal que bloquea el formulario mientras guarda, `ion-toast` y guardado local con Capacitor Preferences. | [`07-Formularios-Reactivos-Inventario`](07-Formularios-Reactivos-Inventario) | — |
 | 08 | Lab Guards: control de acceso | Login con dos roles, sesión en un signal persistida en `sessionStorage`, **functional guards** (`authGuard`) que redirigen con `UrlTree` y factoría `roleGuard(rol)` para que el operador no entre en `/admin`. | [`08-Lab-Guards-Auth`](08-Lab-Guards-Auth) | — |
+| 10 | **Proyecto final: GastoFlow** (en curso) | Gestión de gastos corporativos con dos roles (empleado / administración): menú lateral con *lazy loading*, modelo **RBAC** de permisos, login con formulario reactivo y `returnUrl`, guards `canMatch` (`authGuard`, `guestGuard`, `permisoGuard`) y ayuda integrada. Se desarrolla con **Git Flow** en la rama `develop` (ver [Ramas](#ramas)). Memoria de seguridad en [`docs/security-architecture.md`](10-Proyecto-Final-GastoFlow/docs/security-architecture.md). | [`10-Proyecto-Final-GastoFlow`](10-Proyecto-Final-GastoFlow) | — |
 
 Cada carpeta contiene el proyecto (la carpeta con `package.json`), el PDF entregado y `capturas/`.
 La mayoría incluye también un `README.md` con la tabla requisito → fichero y
@@ -57,8 +58,18 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 ├── 06-Supabase-Auth-Roles/dam-crm-app/
 ├── 07-Formularios-Reactivos-Inventario/inventario-app/
 ├── 08-Lab-Guards-Auth/auth-guard-app/
+├── 10-Proyecto-Final-GastoFlow/          Proyecto final (app en la raíz de la carpeta + docs/)
 └── actualizar-registro.mjs              Regenera el registro de trabajo de este README
 ```
+
+## Ramas
+
+| Rama | Para qué |
+|---|---|
+| `main` | Lo terminado. Es la que ve Vercel. |
+| `develop` | Integración del **proyecto final** en curso (GastoFlow). |
+| `feature/*` | Una rama por funcionalidad del proyecto final; sale de `develop` y vuelve a ella con un merge `--no-ff`. |
+| `app-gestion-roles` | Práctica 09 (app de gestión con Supabase), en curso. |
 
 ## Tecnologías
 
