@@ -98,11 +98,29 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**34 commits** en **11 días de trabajo**, del 25-09-2026 al 26-10-2026 (lo más reciente arriba).
+**52 commits** en **12 días de trabajo**, del 25-09-2026 al 30-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
-| **26-10-2026** | 19:30 | 05 TechTicket: rehecha (servicio Store con signals, HttpClient, OnPush) + PDF |
+| **30-10-2026** | 10:11 | Merge branch 'feature/docs-repo' into develop |
+|  | 10:11 | README: proyecto final GastoFlow (carpeta 10) y tabla de ramas del repositorio |
+|  | 10:11 | docs(10): propuesta con el enlace al repositorio de la asignatura |
+|  | 09:50 | Merge branch 'feature/docs-seguridad' into develop |
+|  | 09:50 | docs: guia del codigo y README con estructura, flujo Git y registro de trabajo |
+|  | 09:50 | docs: memoria de arquitectura de seguridad (guards, interceptor, RBAC) |
+|  | 09:50 | Merge branch 'feature/auth-guards' into develop |
+|  | 09:50 | feat(ui): menu segun permisos, usuario conectado, cerrar sesion y aviso de acceso denegado |
+|  | 09:50 | feat(guards): authGuard, guestGuard y permisoGuard funcionales con canMatch; sin precarga |
+|  | 09:50 | feat(auth): login con formulario reactivo, validaciones y vuelta a returnUrl |
+|  | 09:50 | feat(auth): AuthService con signals y sesion en sessionStorage (simulada hasta Supabase) |
+|  | 09:50 | Merge branch 'feature/estructura-layout' into develop |
+|  | 09:50 | style(a11y): tema corporativo con contraste AA, zoom permitido y foco visible |
+|  | 09:50 | feat(layout): shell con menu lateral (ion-split-pane) y paginas con carga diferida |
+|  | 09:50 | feat(core): modelos de roles y permisos (RBAC), sesion y menu |
+|  | 09:50 | docs: README inicial y propuesta del proyecto (PDF) |
+|  | 09:50 | chore: proyecto base Ionic 9 + Angular 22 (standalone, sin zone.js) |
+| **26-10-2026** | 19:30 | README: revision de la practica 05 |
+|  | 19:30 | 05 TechTicket: rehecha (servicio Store con signals, HttpClient, OnPush) + PDF |
 |  | 19:20 | 08 Lab Guards: PDF con mencion a la app general de repaso |
 |  | 19:20 | 07 Formularios reactivos: PDF de entrega sin capturas |
 |  | 19:20 | 06 Supabase: PDF de entrega sin capturas (el codigo esta en GitHub) |
