@@ -35,3 +35,27 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ---------------- Estilos propios de GastoFlow ---------------- */
+
+/* h1 dentro del título de una tarjeta: mantiene la jerarquía de encabezados
+   (bueno para lectores de pantalla) sin que se vea enorme. */
+.titulo-card {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* Contenido centrado y con ancho máximo en pantallas grandes (mobile-first:
+   en móvil ocupa todo el ancho). */
+main {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Foco visible al navegar con teclado (WCAG 2.4.7) */
+:focus-visible {
+  outline: 3px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
