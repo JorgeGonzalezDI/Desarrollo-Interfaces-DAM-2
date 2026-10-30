@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Ayuda</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main>
+    <h1>Manual de usuario</h1>
+    <p>GastoFlow sirve para registrar los gastos de empresa y que Administración los revise.</p>
+
+    <ion-accordion-group>
+      <ion-accordion value="acceso">
+        <ion-item slot="header"><ion-label>¿Cómo entro en la aplicación?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Inicia sesión con el correo y la contraseña que te ha dado la empresa. Si intentas abrir una
+          página privada sin sesión, la app te pedirá que entres y después te devolverá a esa página.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="roles">
+        <ion-item slot="header"><ion-label>¿Por qué no veo algunas opciones del menú?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Cada usuario tiene un rol. Los <strong>empleados</strong> ven sus propios gastos; el equipo de
+          <strong>Administración</strong> además puede aprobar gastos y ver el cuadro de mando.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="teclado">
+        <ion-item slot="header"><ion-label>¿Puedo usarla solo con el teclado?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Sí. Usa <kbd>Tab</kbd> para moverte, <kbd>Enter</kbd> para activar y <kbd>Esc</kbd> para cerrar el menú.
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </main>
+</ion-content>

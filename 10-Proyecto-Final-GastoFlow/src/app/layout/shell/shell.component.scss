@@ -1,0 +1,11 @@
+// Opción del menú de la página actual: fondo suave + texto en color primario
+// (no se usa solo el color para marcarla: también va en negrita, por accesibilidad).
+ion-item.seleccionado {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  --color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+ion-item.seleccionado ion-icon {
+  color: var(--ion-color-primary);
+}
