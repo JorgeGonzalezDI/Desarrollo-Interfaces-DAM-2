@@ -1,18 +1,32 @@
 import { Routes } from '@angular/router';
 
+import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { permisoGuard } from './core/auth/permiso.guard';
+
 /**
  * Tabla de rutas.
- *  - loadComponent = carga diferida (lazy loading): el código de cada página es un
- *    fichero JS aparte que solo se descarga la primera vez que se visita.
+ *  - loadComponent = carga diferida (lazy loading): cada página es un fichero JS aparte
+ *    que solo se descarga la primera vez que se visita.
+ *  - canMatch = guards que deciden si la ruta "existe" para este usuario ANTES de descargar
+ *    su código (ver core/auth/auth.guard.ts).
  *  - children: las páginas privadas se pintan DENTRO del shell (menú lateral).
+ *
+ *  Ruta                  Sesión  Permiso necesario     Roles que entran
+ *  /login                no      -                     invitados
+ *  /inicio, /ayuda       sí      -                     admin, empleado
+ *  /gastos               sí      gastos:ver-propios    admin, empleado
+ *  /admin/aprobaciones   sí      gastos:aprobar        admin
+ *  /admin/dashboard      sí      dashboard:ver         admin
  */
 export const routes: Routes = [
   {
     path: 'login',
+    canMatch: [guestGuard],
     loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
   },
   {
     path: '',
+    canMatch: [authGuard], // toda la zona privada exige sesión
     loadComponent: () => import('./layout/shell/shell.component').then((m) => m.ShellComponent),
     children: [
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -22,15 +36,18 @@ export const routes: Routes = [
       },
       {
         path: 'gastos',
+        canMatch: [permisoGuard('gastos:ver-propios')],
         loadComponent: () => import('./features/gastos/gastos.page').then((m) => m.GastosPage),
       },
       {
         path: 'admin/aprobaciones',
+        canMatch: [permisoGuard('gastos:aprobar')],
         loadComponent: () =>
           import('./features/admin/aprobaciones/aprobaciones.page').then((m) => m.AprobacionesPage),
       },
       {
         path: 'admin/dashboard',
+        canMatch: [permisoGuard('dashboard:ver')],
         loadComponent: () =>
           import('./features/admin/dashboard/dashboard.page').then((m) => m.DashboardPage),
       },
@@ -40,6 +57,6 @@ export const routes: Routes = [
       },
     ],
   },
-  // Cualquier URL desconocida vuelve al inicio (debe ir la última)
+  // Cualquier URL desconocida vuelve a la raíz (y de ahí al login o al inicio)
   { path: '**', redirectTo: '' },
 ];
