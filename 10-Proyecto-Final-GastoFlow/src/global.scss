@@ -59,3 +59,8 @@ main {
   outline-offset: 2px;
 }
 
+/* Avisos (ion-note) a ancho completo encima del contenido */
+ion-note.aviso {
+  display: block;
+  margin-bottom: 16px;
+}

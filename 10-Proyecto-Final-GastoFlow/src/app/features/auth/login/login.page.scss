@@ -1,0 +1,19 @@
+// Tarjeta de login estrecha y centrada (en móvil ocupa todo el ancho)
+.login {
+  max-width: 420px;
+  margin: 8vh auto 0;
+}
+
+ion-input {
+  margin-bottom: 16px;
+}
+
+.aviso {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.error {
+  margin: 0 0 12px;
+  text-align: center;
+}

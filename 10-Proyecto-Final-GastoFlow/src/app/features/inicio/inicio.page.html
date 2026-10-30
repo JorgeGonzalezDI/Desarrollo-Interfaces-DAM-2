@@ -10,12 +10,25 @@
 
 <ion-content class="ion-padding">
   <main>
+    <!-- role="alert": el lector de pantalla lo anuncia nada más aparecer -->
+    @if (denegado()) {
+      <ion-note color="danger" class="aviso" role="alert">
+        No tienes permiso para acceder a <strong>{{ denegado() }}</strong>.
+      </ion-note>
+    }
+
     <ion-card>
       <ion-card-header>
-        <ion-card-title><h1 class="titulo-card">Inicio</h1></ion-card-title>
+        <ion-card-title>
+          <h1 class="titulo-card">Hola, {{ auth.sesion()?.nombre }}</h1>
+        </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <p>Bienvenido a GastoFlow, la aplicación de gestión de gastos de la empresa. Usa el menú para moverte por las secciones.</p>
+        <p>
+          Has entrado como <strong>{{ auth.nombreRol() }}</strong>
+          ({{ auth.sesion()?.departamento }}).
+        </p>
+        <p>Usa el menú para moverte por las secciones a las que tienes acceso.</p>
       </ion-card-content>
     </ion-card>
   </main>
