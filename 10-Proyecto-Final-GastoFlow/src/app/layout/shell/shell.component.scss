@@ -9,3 +9,17 @@ ion-item.seleccionado {
 ion-item.seleccionado ion-icon {
   color: var(--ion-color-primary);
 }
+
+// Bloque con el nombre y el rol del usuario conectado
+.usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border-bottom: 1px solid var(--ion-color-step-150, #ddd);
+
+  span {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium-shade);
+  }
+}

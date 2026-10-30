@@ -1,7 +1,9 @@
-import { Component, computed } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
+  IonButton,
   IonContent,
+  IonFooter,
   IonHeader,
   IonIcon,
   IonItem,
@@ -21,14 +23,16 @@ import {
   checkmarkDoneOutline,
   helpCircleOutline,
   homeOutline,
+  logOutOutline,
   receiptOutline,
 } from 'ionicons/icons';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { ItemMenu } from '../../core/models/menu.model';
 
 /**
  * Menú completo de la app. Cada entrada con "permiso" solo la verá quien lo tenga
- * (de momento se muestran todas; el filtrado por permisos llega con la autenticación).
+ * (y aunque alguien escriba la URL a mano, la ruta está protegida por su guard).
  */
 const MENU: readonly ItemMenu[] = [
   { titulo: 'Inicio', url: '/inicio', icono: 'home-outline' },
@@ -65,14 +69,32 @@ const MENU: readonly ItemMenu[] = [
     IonIcon,
     IonLabel,
     IonRouterOutlet,
+    IonFooter,
+    IonButton,
   ],
 })
 export class ShellComponent {
-  /** Entradas visibles del menú (computed: se recalcula solo si cambia algo de lo que lee). */
-  public readonly menu = computed(() => MENU);
+  private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
+
+  /**
+   * Entradas visibles del menú. computed: se recalcula SOLO cuando cambian los
+   * permisos (p. ej. al cambiar de usuario). Ocultar la opción es UX; la seguridad
+   * real la ponen los guards de las rutas.
+   */
+  public readonly menu = computed(() => {
+    const permisos = this.auth.permisos();
+    return MENU.filter((item) => !item.permiso || permisos.includes(item.permiso));
+  });
 
   constructor() {
     // Registra los iconos que usa el menú (solo se incluyen en el bundle los usados)
-    addIcons({ homeOutline, receiptOutline, checkmarkDoneOutline, barChartOutline, helpCircleOutline });
+    addIcons({ homeOutline, receiptOutline, checkmarkDoneOutline, barChartOutline, helpCircleOutline, logOutOutline });
+  }
+
+  /** Cierra sesión y vuelve al login (replaceUrl: el botón "atrás" no vuelve a la zona privada). */
+  public async salir(): Promise<void> {
+    this.auth.logout();
+    await this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }
