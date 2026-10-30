@@ -1,0 +1,36 @@
+<!-- contentId une el menú con el contenido principal (el ion-router-outlet de abajo) -->
+<ion-split-pane contentId="main-content" when="lg">
+  <ion-menu contentId="main-content" type="overlay">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>GastoFlow</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <!-- nav + aria-label: el lector de pantalla anuncia "Navegación principal" -->
+      <nav aria-label="Navegación principal">
+        <ion-list lines="none">
+          <ion-list-header>Menú</ion-list-header>
+          @for (item of menu(); track item.url) {
+            <!-- ion-menu-toggle cierra el menú en móvil al pulsar una opción -->
+            <ion-menu-toggle [autoHide]="false">
+              <ion-item
+                [routerLink]="item.url"
+                routerLinkActive="seleccionado"
+                [detail]="false"
+                button
+              >
+                <ion-icon slot="start" [name]="item.icono" aria-hidden="true"></ion-icon>
+                <ion-label>{{ item.titulo }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          }
+        </ion-list>
+      </nav>
+    </ion-content>
+  </ion-menu>
+
+  <!-- Aquí se pintan las páginas hijas (inicio, gastos, admin...) -->
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-split-pane>
