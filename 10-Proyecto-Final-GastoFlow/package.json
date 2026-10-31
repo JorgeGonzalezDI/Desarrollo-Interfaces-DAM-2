@@ -1,15 +1,21 @@
 {
   "name": "gastoflow",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Jorge González Gómez",
   "homepage": "https://github.com/JorgeGonzalezDI",
   "scripts": {
-    "ng": "ng",
+    "config": "node scripts/generar-config.mjs",
+    "prestart": "npm run config",
     "start": "ng serve",
+    "prebuild": "npm run config",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "pretest": "npm run config",
     "test": "ng test",
-    "lint": "ng lint"
+    "test:ci": "npm run config && ng test --watch=false",
+    "build:vercel": "npm run test:ci && npm run build",
+    "docs": "compodoc -p tsconfig.app.json -d docs/compodoc --name \"GastoFlow · documentación técnica\" --hideGenerator --disableGraph",
+    "lint": "ng lint",
+    "watch": "ng build --watch --configuration development"
   },
   "private": true,
   "dependencies": {
@@ -19,9 +25,14 @@
     "@angular/forms": "22.1.7",
     "@angular/platform-browser": "22.1.7",
     "@angular/router": "22.1.7",
+    "@angular/service-worker": "22.1.7",
     "@capacitor/core": "^8.5.3",
     "@ionic/angular": "^9.0.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "chart.js": "^4.6.1",
     "ionicons": "^8.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -30,14 +41,15 @@
     "@angular/cli": "22.1.8",
     "@angular/compiler-cli": "22.1.7",
     "@angular/language-service": "22.1.7",
+    "@capacitor/cli": "^8.5.3",
+    "@compodoc/compodoc": "^2.0.0",
     "@ionic/angular-toolkit": "^13.0.0",
     "angular-eslint": "22.0.0",
     "eslint": "^10.10.0",
     "jsdom": "^26.0.0",
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.61.0",
-    "vitest": "~4.0.18",
-    "@capacitor/cli": "^8.5.3"
+    "vitest": "~4.0.18"
   },
   "engines": {
     "node": "24.x"
