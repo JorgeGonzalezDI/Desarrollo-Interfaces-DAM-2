@@ -98,10 +98,31 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**52 commits** en **12 días de trabajo**, del 25-09-2026 al 30-10-2026 (lo más reciente arriba).
+**73 commits** en **13 días de trabajo**, del 25-09-2026 al 31-10-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
+| **31-10-2026** | 21:39 | Merge branch 'feature/calidad-docs' into develop |
+|  | 21:39 | Merge branch 'feature/accesibilidad-pwa' into develop |
+|  | 21:39 | Merge branch 'feature/dashboard-informes' into develop |
+|  | 21:39 | Merge branch 'feature/gastos-formularios' into develop |
+|  | 21:38 | Merge branch 'feature/componentes' into develop |
+|  | 21:38 | Merge branch 'feature/supabase-datos' into develop |
+|  | 21:35 | docs: Compodoc, manual de usuario, anexo de seguridad, capturas, Lighthouse y README v1.0.0 |
+|  | 21:35 | feat(pwa): service worker, manifiesto e iconos de GastoFlow; documentación publicada en /documentacion |
+|  | 21:35 | feat(dashboard): cuadro de mando con KPIs, 3 gráficos, filtros reactivos y exportación PDF/CSV |
+|  | 21:35 | feat(gastos): mis gastos con la tabla reutilizable, alta con validación dinámica y canDeactivate, inicio con KPIs |
+|  | 21:35 | feat(shared): widget estadístico seleccionable y gráfico Chart.js con ciclo de vida (sin fugas de memoria) |
+|  | 21:35 | ci: GitHub Actions (tests + build en cada push/PR); Vercel solo despliega si pasan los tests |
+|  | 21:35 | feat(a11y): rejillas responsive mobile-first, utilidades accesibles, robots.txt y ayuda ampliada |
+|  | 21:35 | feat(admin): bandeja de aprobaciones (aprobar / rechazar con motivo) actualizada en tiempo real |
+|  | 21:35 | feat(registro): alta de usuario con formulario reactivo y validación asíncrona del correo |
+|  | 21:35 | feat(shared): tabla de datos genérica <T> con buscador, ordenación, paginación y acciones (inputs/outputs) |
+|  | 21:35 | test: tests unitarios de RBAC, permisoGuard, validadores (incluido el asíncrono), CSV y lógica de la tabla |
+|  | 21:35 | feat(api): ApiRestService con HttpClient, interceptor (Bearer, 401 con refresh, 403) y store de gastos con Realtime |
+|  | 21:35 | feat(auth): AuthService con Supabase Auth (JWT + rol leído de perfiles) y guards canMatch asíncronos |
+|  | 21:35 | feat(db): esquema de Supabase con RLS, triggers de reglas de negocio, validación de email, Realtime y datos demo |
+|  | 21:35 | build: Supabase, Chart.js y jsPDF; configuración por .env (sin claves en el repo) y cabeceras de seguridad en Vercel |
 | **30-10-2026** | 10:11 | Merge branch 'feature/docs-repo' into develop |
 |  | 10:11 | README: proyecto final GastoFlow (carpeta 10) y tabla de ramas del repositorio |
 |  | 10:11 | docs(10): propuesta con el enlace al repositorio de la asignatura |
