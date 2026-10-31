@@ -64,3 +64,48 @@ ion-note.aviso {
   display: block;
   margin-bottom: 16px;
 }
+
+/* Solo para lectores de pantalla: invisible en pantalla, pero se lee */
+.solo-lector {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Rejilla de widgets: 1 columna en móvil, 2 en tablet, 4 en escritorio (mobile-first) */
+.rejilla-widgets {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+@media (min-width: 576px) {
+  .rejilla-widgets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .rejilla-widgets {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Encabezados de página: tamaño escalable (rem) para respetar el zoom del usuario */
+main h1 {
+  font-size: 1.6rem;
+  margin: 0 0 8px;
+}
+
+/* Subtítulo bajo un título de tarjeta */
+.subtitulo-card {
+  margin: 4px 0 0;
+  color: var(--ion-color-medium-shade);
+}
