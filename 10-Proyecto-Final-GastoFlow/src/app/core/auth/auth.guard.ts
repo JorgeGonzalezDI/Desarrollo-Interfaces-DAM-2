@@ -7,21 +7,23 @@ import { AuthService } from './auth.service';
  * Guard FUNCIONAL de AUTENTICACIÓN (¿hay sesión?).
  *
  * Usa canMatch y no canActivate: canMatch se ejecuta mientras el router RECONOCE la URL,
- * antes de dar la ruta por buena. Si devuelve false, para el router esa ruta "no existe"
- * para este usuario; si devuelve un UrlTree, redirige. Así la zona privada (el shell y sus
- * hijas, todas con loadComponent) no se descarga ni se construye sin sesión.
- * (Con loadChildren, canActivate llegaría tarde: la configuración hija ya estaría descargada.)
+ * antes de dar la ruta por buena. Si devuelve un UrlTree, redirige y la zona privada
+ * (shell y páginas, todas con loadComponent) no se descarga ni se construye.
  *
- *  - true    -> deja pasar.
- *  - UrlTree -> cancela y redirige a /login?returnUrl=<url pedida>.
- *
- * canMatch no recibe la URL completa: se reconstruye con los "segments" (trozos de la URL).
+ * Es async: primero espera a que AuthService haya recuperado la sesión guardada
+ * (si no, un F5 en una página privada mandaría al login sin motivo).
+ * canMatch no recibe la URL completa: se reconstruye con los "segments".
  */
-export const authGuard: CanMatchFn = (_route, segments): boolean | UrlTree => {
+export const authGuard: CanMatchFn = async (_route, segments): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
+  await auth.listo;
   if (auth.haySesionValida()) {
+    return true;
+  }
+  // Había sesión pero el token caducó: se intenta renovar antes de echar al usuario
+  if (auth.estaAutenticado() && (await auth.refrescarSesion())) {
     return true;
   }
 
@@ -32,11 +34,12 @@ export const authGuard: CanMatchFn = (_route, segments): boolean | UrlTree => {
 };
 
 /**
- * Guard "de invitado": la pantalla de login solo tiene sentido SIN sesión.
+ * Guard "de invitado": login y registro solo tienen sentido SIN sesión.
  * Si ya hay sesión, manda directamente al inicio.
  */
-export const guestGuard: CanMatchFn = (): boolean | UrlTree => {
+export const guestGuard: CanMatchFn = async (): Promise<boolean | UrlTree> => {
   const auth = inject(AuthService);
   const router = inject(Router);
+  await auth.listo;
   return auth.haySesionValida() ? router.createUrlTree(['/inicio']) : true;
 };

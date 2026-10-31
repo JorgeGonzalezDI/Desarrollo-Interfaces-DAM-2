@@ -8,11 +8,18 @@
   <main class="login">
     <ion-card>
       <ion-card-header>
-        <ion-card-title><h1 class="titulo-card">Iniciar sesión</h1></ion-card-title>
-        <ion-card-subtitle>Gestión de gastos de empresa</ion-card-subtitle>
+        <!-- h1 propio (y no ion-card-title) para mantener el orden de encabezados h1 > h2 -->
+        <h1 class="titulo-card">Iniciar sesión</h1>
+        <p class="subtitulo-card">Gestión de gastos de empresa</p>
       </ion-card-header>
 
       <ion-card-content>
+        @if (!configurado) {
+          <ion-note color="danger" class="aviso" role="alert">
+            Falta la configuración de Supabase (archivo .env o variables de Vercel).
+          </ion-note>
+        }
+
         <!-- Aviso cuando authGuard nos ha traído aquí desde una ruta privada -->
         @if (returnUrl()) {
           <ion-note color="primary" class="aviso" role="status">
@@ -63,6 +70,8 @@
             }
           </ion-button>
         </form>
+
+        <p class="registro">¿Primera vez en GastoFlow? <a routerLink="/registro">Crea tu cuenta</a></p>
       </ion-card-content>
     </ion-card>
   </main>
