@@ -13,6 +13,11 @@
         <div class="usuario" aria-label="Usuario conectado">
           <strong>{{ sesion.nombre }}</strong>
           <span>{{ auth.nombreRol() }} · {{ sesion.departamento }}</span>
+          <!-- Indicador de tiempo real (texto + icono, no solo color) -->
+          <span class="en-vivo" [class.activo]="gastos.enVivo()" role="status">
+            <ion-icon name="radio-outline" aria-hidden="true"></ion-icon>
+            {{ gastos.enVivo() ? 'Actualización en vivo' : 'Sin conexión en vivo' }}
+          </span>
         </div>
       }
 
@@ -26,6 +31,7 @@
               <ion-item
                 [routerLink]="item.url"
                 routerLinkActive="seleccionado"
+                [routerLinkActiveOptions]="{ exact: true }"
                 [detail]="false"
                 button
               >

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
   IonButton,
@@ -24,10 +24,13 @@ import {
   helpCircleOutline,
   homeOutline,
   logOutOutline,
+  addCircleOutline,
+  radioOutline,
   receiptOutline,
 } from 'ionicons/icons';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { GastosService } from '../../core/data/gastos.service';
 import { ItemMenu } from '../../core/models/menu.model';
 
 /**
@@ -37,6 +40,7 @@ import { ItemMenu } from '../../core/models/menu.model';
 const MENU: readonly ItemMenu[] = [
   { titulo: 'Inicio', url: '/inicio', icono: 'home-outline' },
   { titulo: 'Mis gastos', url: '/gastos', icono: 'receipt-outline', permiso: 'gastos:ver-propios' },
+  { titulo: 'Registrar gasto', url: '/gastos/nuevo', icono: 'add-circle-outline', permiso: 'gastos:crear' },
   { titulo: 'Aprobaciones', url: '/admin/aprobaciones', icono: 'checkmark-done-outline', permiso: 'gastos:aprobar' },
   { titulo: 'Cuadro de mando', url: '/admin/dashboard', icono: 'bar-chart-outline', permiso: 'dashboard:ver' },
   { titulo: 'Ayuda', url: '/ayuda', icono: 'help-circle-outline' },
@@ -73,9 +77,11 @@ const MENU: readonly ItemMenu[] = [
     IonButton,
   ],
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly auth = inject(AuthService);
+  protected readonly gastos = inject(GastosService);
 
   /**
    * Entradas visibles del menú. computed: se recalcula SOLO cuando cambian los
@@ -89,12 +95,24 @@ export class ShellComponent {
 
   constructor() {
     // Registra los iconos que usa el menú (solo se incluyen en el bundle los usados)
-    addIcons({ homeOutline, receiptOutline, checkmarkDoneOutline, barChartOutline, helpCircleOutline, logOutOutline });
+    addIcons({ addCircleOutline, radioOutline, homeOutline, receiptOutline, checkmarkDoneOutline, barChartOutline, helpCircleOutline, logOutOutline });
+  }
+
+  /**
+   * Ciclo de vida: al entrar en la zona privada se cargan los datos y se abre el canal
+   * de tiempo real; al salir (destroy) se cierra, para no dejar conexiones abiertas.
+   */
+  ngOnInit(): void {
+    void this.gastos.cargar();
+    this.gastos.iniciarTiempoReal();
+    this.destroyRef.onDestroy(() => void this.gastos.detenerTiempoReal());
   }
 
   /** Cierra sesión y vuelve al login (replaceUrl: el botón "atrás" no vuelve a la zona privada). */
   public async salir(): Promise<void> {
-    this.auth.logout();
+    await this.gastos.detenerTiempoReal();
+    await this.auth.logout();
+    this.gastos.limpiar();
     await this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }

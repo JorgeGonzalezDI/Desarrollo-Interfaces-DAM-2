@@ -23,3 +23,15 @@ ion-item.seleccionado ion-icon {
     color: var(--ion-color-medium-shade);
   }
 }
+
+.en-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.78rem;
+
+  &.activo {
+    color: var(--ion-color-success-shade);
+  }
+}
