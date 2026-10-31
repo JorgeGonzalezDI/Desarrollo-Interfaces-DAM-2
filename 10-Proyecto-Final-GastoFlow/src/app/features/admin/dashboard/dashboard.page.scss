@@ -1,0 +1,78 @@
+.dashboard {
+  max-width: 1200px;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.filtros-activos {
+  margin: 4px 0 0;
+  color: var(--ion-color-medium-shade);
+}
+
+.exportar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// Mobile-first: filtros apilados; desde tablet, en una fila (flexbox)
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+
+  ion-select {
+    max-width: 320px;
+  }
+}
+
+@media (min-width: 768px) {
+  .filtros {
+    flex-direction: row;
+    align-items: center;
+
+    ion-segment {
+      max-width: 480px;
+    }
+  }
+}
+
+.rejilla-graficos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 16px 0;
+
+  // Sin esto el <canvas> empuja la celda y el gráfico se sale de la rejilla
+  > * {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .rejilla-graficos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ancho-completo {
+    grid-column: 1 / -1;
+  }
+}
+
+.tarjeta {
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--ion-card-background, var(--ion-background-color, #fff));
+}
