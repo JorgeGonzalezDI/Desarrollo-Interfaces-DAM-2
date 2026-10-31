@@ -1,0 +1,24 @@
+.registro {
+  max-width: 480px;
+  margin: 4vh auto 0;
+}
+
+ion-input,
+ion-select {
+  margin-bottom: 16px;
+}
+
+.error {
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.pie {
+  margin: 16px 0 0;
+  text-align: center;
+
+  a {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+}
