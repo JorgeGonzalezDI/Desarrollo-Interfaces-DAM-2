@@ -1,22 +1,41 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <!-- Botón hamburguesa: solo se ve en móvil/tablet (en escritorio el menú está fijo) -->
     <ion-buttons slot="start">
       <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
     </ion-buttons>
     <ion-title>Mis gastos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/gastos/nuevo" aria-label="Registrar un gasto">
+        <ion-icon slot="icon-only" name="add-circle-outline" aria-hidden="true"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <main>
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title><h1 class="titulo-card">Mis gastos</h1></ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Aquí el empleado verá y registrará sus gastos (alta con formulario reactivo y validaciones). Se completa en la Fase 1-3.</p>
-      </ion-card-content>
-    </ion-card>
+    <h1>Mis gastos</h1>
+
+    <ion-segment [scrollable]="true" [value]="filtro()" (ionChange)="cambiarFiltro($event.detail.value)" aria-label="Filtrar por estado">
+      <ion-segment-button value="todos"><ion-label>Todos</ion-label></ion-segment-button>
+      <ion-segment-button value="pendiente"><ion-label>Pendientes</ion-label></ion-segment-button>
+      <ion-segment-button value="aprobado"><ion-label>Aprobados</ion-label></ion-segment-button>
+      <ion-segment-button value="rechazado"><ion-label>Rechazados</ion-label></ion-segment-button>
+    </ion-segment>
+
+    @if (store.error()) {
+      <ion-note color="danger" class="aviso" role="alert">{{ store.error() }}</ion-note>
+    }
+
+    <app-tabla-datos
+      titulo="Mis gastos"
+      [columnas]="columnas"
+      [filas]="filas()"
+      [acciones]="acciones"
+      [cargando]="store.cargando()"
+      [descripcionFila]="describir"
+      textoVacio="Todavía no hay gastos en esta vista."
+      (accion)="alAccion($event)"
+    />
   </main>
 </ion-content>
