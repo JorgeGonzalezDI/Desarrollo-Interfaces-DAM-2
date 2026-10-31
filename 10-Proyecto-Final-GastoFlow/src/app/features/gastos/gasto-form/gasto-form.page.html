@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/gastos" text="Volver"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registrar gasto</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="formulario">
+    <h1>Nuevo gasto</h1>
+    <p class="intro">Los campos marcados con * son obligatorios. El gasto quedará pendiente hasta que Administración lo revise.</p>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <fieldset>
+        <legend>Datos del gasto</legend>
+        <div class="fila-2">
+          <ion-input formControlName="fecha" type="date" label="Fecha *" labelPlacement="stacked" fill="outline"
+                     [max]="hoy" [class.ion-invalid]="!!errorDe('fecha')" [class.ion-touched]="!!errorDe('fecha')"
+                     [errorText]="errorDe('fecha')"></ion-input>
+
+          <ion-select formControlName="categoria_id" label="Categoría *" labelPlacement="stacked" fill="outline"
+                      interface="popover" placeholder="Elige una categoría"
+                      [class.ion-invalid]="!!errorDe('categoria_id')" [class.ion-touched]="!!errorDe('categoria_id')"
+                      [errorText]="errorDe('categoria_id')">
+            @for (c of store.categorias(); track c.id) {
+              <ion-select-option [value]="c.id">{{ c.nombre }}</ion-select-option>
+            }
+          </ion-select>
+        </div>
+
+        <ion-input formControlName="importe" type="number" inputmode="decimal" step="0.01" min="0.01" max="5000"
+                   label="Importe (€) *" labelPlacement="stacked" fill="outline" [helperText]="ayudaImporte()"
+                   [class.ion-invalid]="!!errorDe('importe')" [class.ion-touched]="!!errorDe('importe')"
+                   [errorText]="errorDe('importe')"></ion-input>
+
+        <ion-input formControlName="descripcion" label="Descripción *" labelPlacement="stacked" fill="outline"
+                   [counter]="true" maxlength="200" placeholder="Ej.: Tren a reunión con cliente en Valencia"
+                   [class.ion-invalid]="!!errorDe('descripcion')" [class.ion-touched]="!!errorDe('descripcion')"
+                   [errorText]="errorDe('descripcion')"></ion-input>
+      </fieldset>
+
+      <!-- Grupo anidado: se guarda como documento JSON (jsonb) -->
+      <fieldset formGroupName="detalles">
+        <legend>Detalles</legend>
+        <div class="fila-2">
+          <ion-input formControlName="proveedor" label="Proveedor" labelPlacement="stacked" fill="outline"
+                     placeholder="Ej.: Renfe" [class.ion-invalid]="!!errorDe('detalles.proveedor')"
+                     [errorText]="errorDe('detalles.proveedor')"></ion-input>
+
+          <ion-select formControlName="metodo_pago" label="Método de pago" labelPlacement="stacked" fill="outline"
+                      interface="popover">
+            @for (m of metodosPago; track m) {
+              <ion-select-option [value]="m">{{ m }}</ion-select-option>
+            }
+          </ion-select>
+        </div>
+
+        @if (esDesplazamiento()) {
+          <ion-input formControlName="kilometros" type="number" inputmode="numeric" label="Kilómetros *"
+                     labelPlacement="stacked" fill="outline" helperText="Obligatorio en los desplazamientos"
+                     [class.ion-invalid]="!!errorDe('detalles.kilometros')"
+                     [class.ion-touched]="!!errorDe('detalles.kilometros')"
+                     [errorText]="errorDe('detalles.kilometros')"></ion-input>
+        }
+
+        <ion-textarea formControlName="notas" label="Notas" labelPlacement="stacked" fill="outline" [autoGrow]="true"
+                      [counter]="true" maxlength="300"></ion-textarea>
+      </fieldset>
+
+      <div aria-live="assertive">
+        @if (error()) {
+          <ion-text color="danger"><p class="error">{{ error() }}</p></ion-text>
+        }
+      </div>
+
+      <ion-button type="submit" expand="block" [disabled]="guardando()">
+        @if (guardando()) {
+          <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+          <span class="ion-padding-start">Guardando…</span>
+        } @else {
+          Guardar gasto
+        }
+      </ion-button>
+    </form>
+
+    @if (store.categorias().length === 0 && !store.cargando()) {
+      <ion-note color="warning" class="aviso" role="status">No se han podido cargar las categorías.</ion-note>
+    }
+  </main>
+</ion-content>
