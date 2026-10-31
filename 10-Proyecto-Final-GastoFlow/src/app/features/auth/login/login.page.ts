@@ -1,14 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonButton,
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
   IonContent,
   IonHeader,
   IonInput,
@@ -21,6 +19,7 @@ import {
 import { map } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { SupabaseService } from '../../../core/supabase/supabase.service';
 
 /**
  * Pantalla de login con FORMULARIO REACTIVO: el formulario se define en TypeScript
@@ -33,15 +32,14 @@ import { AuthService } from '../../../core/auth/auth.service';
   styleUrls: ['./login.page.scss'],
   imports: [
     ReactiveFormsModule,
+    RouterLink,
     IonHeader,
     IonToolbar,
     IonTitle,
     IonContent,
     IonCard,
     IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonCardContent,
+        IonCardContent,
     IonInput,
     IonButton,
     IonSpinner,
@@ -54,6 +52,8 @@ export class LoginPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  /** Si falta la configuración de Supabase se avisa en pantalla en vez de fallar en silencio. */
+  protected readonly configurado = inject(SupabaseService).configurado;
 
   /** Formulario: nonNullable -> al hacer reset vuelve a '' en vez de a null. */
   public readonly form = this.fb.nonNullable.group({
@@ -94,15 +94,11 @@ export class LoginPage {
     this.error.set('');
     try {
       const { email, password } = this.form.getRawValue();
-      const ok = await this.auth.login(email, password);
-      if (ok) {
-        // Vuelve a la página que pidió antes del login, o al inicio
-        await this.router.navigateByUrl(this.returnUrl() ?? '/inicio');
-      } else {
-        this.error.set('Correo o contraseña incorrectos.');
-      }
-    } catch {
-      this.error.set('No se ha podido iniciar sesión. Inténtalo de nuevo.');
+      await this.auth.login(email, password);
+      // Vuelve a la página que pidió antes del login, o al inicio
+      await this.router.navigateByUrl(this.returnUrl() ?? '/inicio', { replaceUrl: true });
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'No se ha podido iniciar sesión.');
     } finally {
       this.cargando.set(false);
     }

@@ -15,10 +15,11 @@ import { AuthService } from './auth.service';
  * sin precarga: ver app.config.ts).
  */
 export function permisoGuard(permiso: Permiso): CanMatchFn {
-  return (_route, segments): boolean | UrlTree => {
+  return async (_route, segments): Promise<boolean | UrlTree> => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
+    await auth.listo;
     if (auth.tienePermiso(permiso)) {
       return true;
     }
