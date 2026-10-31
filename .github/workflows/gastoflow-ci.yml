@@ -1,0 +1,33 @@
+# Integración continua del proyecto final (GastoFlow).
+# En cada push o Pull Request que toque la carpeta del proyecto: instala dependencias,
+# pasa los tests unitarios y compila para producción. Si algo falla, el check sale en rojo.
+# Vercel ejecuta además "npm run build:vercel" (tests + build): si un test falla, NO se despliega.
+name: GastoFlow CI
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+    paths: ['10-Proyecto-Final-GastoFlow/**', '.github/workflows/gastoflow-ci.yml']
+  pull_request:
+    branches: [main, develop]
+    paths: ['10-Proyecto-Final-GastoFlow/**', '.github/workflows/gastoflow-ci.yml']
+
+jobs:
+  tests-y-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 10-Proyecto-Final-GastoFlow
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: 10-Proyecto-Final-GastoFlow/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Tests unitarios (Vitest)
+        run: npm run test:ci
+      - name: Compilación de producción
+        run: npm run build
