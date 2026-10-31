@@ -1,0 +1,23 @@
+<!-- Si es seleccionable se pinta como <button> (teclado y lector de pantalla gratis);
+     si no, como un bloque informativo. -->
+@if (seleccionable()) {
+  <button type="button" class="widget" [class]="'color-' + color()" [class.activo]="activo()"
+          [attr.aria-pressed]="activo()" (click)="seleccionar()">
+    <ng-container *ngTemplateOutlet="contenido"></ng-container>
+  </button>
+} @else {
+  <div class="widget" [class]="'color-' + color()">
+    <ng-container *ngTemplateOutlet="contenido"></ng-container>
+  </div>
+}
+
+<ng-template #contenido>
+  <span class="icono" aria-hidden="true"><ion-icon [name]="icono()"></ion-icon></span>
+  <span class="texto">
+    <span class="titulo">{{ titulo() }}</span>
+    <span class="valor">{{ valorFormateado() }}</span>
+    @if (descripcion()) {
+      <span class="descripcion">{{ descripcion() }}</span>
+    }
+  </span>
+</ng-template>
