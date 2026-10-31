@@ -68,3 +68,10 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Configuración local de Supabase (se genera con scripts/generar-config.mjs)
+.env
+/src/environments/supabase.config.ts
+
+# Documentación generada en local (la publicada vive en docs/compodoc)
+/documentation

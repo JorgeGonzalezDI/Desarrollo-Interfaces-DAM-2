@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>GastoFlow</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="login">
+    <ion-card>
+      <ion-card-header>
+        <!-- h1 propio (y no ion-card-title) para mantener el orden de encabezados h1 > h2 -->
+        <h1 class="titulo-card">Iniciar sesión</h1>
+        <p class="subtitulo-card">Gestión de gastos de empresa</p>
+      </ion-card-header>
+
+      <ion-card-content>
+        @if (!configurado) {
+          <ion-note color="danger" class="aviso" role="alert">
+            Falta la configuración de Supabase (archivo .env o variables de Vercel).
+          </ion-note>
+        }
+
+        <!-- Aviso cuando authGuard nos ha traído aquí desde una ruta privada -->
+        @if (returnUrl()) {
+          <ion-note color="primary" class="aviso" role="status">
+            Inicia sesión para acceder a <strong>{{ returnUrl() }}</strong>
+          </ion-note>
+        }
+
+        <!-- (ngSubmit) se lanza con el botón y también al pulsar Enter en un campo -->
+        <form [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+          <ion-input
+            formControlName="email"
+            type="email"
+            label="Correo electrónico"
+            labelPlacement="floating"
+            fill="outline"
+            autocomplete="username"
+            inputmode="email"
+            [class.ion-invalid]="campoInvalido('email')"
+            [class.ion-touched]="campoInvalido('email')"
+            errorText="Introduce un correo válido."
+          ></ion-input>
+
+          <ion-input
+            formControlName="password"
+            type="password"
+            label="Contraseña"
+            labelPlacement="floating"
+            fill="outline"
+            autocomplete="current-password"
+            [class.ion-invalid]="campoInvalido('password')"
+            [class.ion-touched]="campoInvalido('password')"
+            errorText="La contraseña tiene al menos 8 caracteres."
+          ></ion-input>
+
+          <!-- aria-live: el lector de pantalla lee el error en cuanto aparece -->
+          <div aria-live="assertive">
+            @if (error()) {
+              <ion-text color="danger"><p class="error">{{ error() }}</p></ion-text>
+            }
+          </div>
+
+          <ion-button type="submit" expand="block" [disabled]="cargando()">
+            @if (cargando()) {
+              <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+              <span class="ion-padding-start">Comprobando…</span>
+            } @else {
+              Entrar
+            }
+          </ion-button>
+        </form>
+
+        <p class="registro">¿Primera vez en GastoFlow? <a routerLink="/registro">Crea tu cuenta</a></p>
+      </ion-card-content>
+    </ion-card>
+  </main>
+</ion-content>

@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Cuadro de mando</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="dashboard">
+    <div class="cabecera">
+      <div>
+        <h1>Cuadro de mando</h1>
+        <p class="filtros-activos" aria-live="polite">{{ textoFiltros() }} · {{ gastosFiltrados().length }} gastos</p>
+      </div>
+      @if (auth.tienePermiso('informes:exportar')) {
+        <div class="exportar">
+          <ion-button fill="outline" (click)="exportarCsv()" [disabled]="gastosFiltrados().length === 0">
+            <ion-icon slot="start" name="download-outline" aria-hidden="true"></ion-icon>
+            Exportar CSV
+          </ion-button>
+          <ion-button (click)="exportarPdf()" [disabled]="exportando() || gastosFiltrados().length === 0">
+            <ion-icon slot="start" name="document-text-outline" aria-hidden="true"></ion-icon>
+            {{ exportando() ? 'Generando…' : 'Exportar PDF' }}
+          </ion-button>
+        </div>
+      }
+    </div>
+
+    <!-- Filtros: cualquier cambio recalcula todo el panel en el momento -->
+    <section class="filtros" aria-label="Filtros del cuadro de mando">
+      <ion-segment [scrollable]="true" [value]="periodo()" (ionChange)="cambiarPeriodo($event.detail.value)" aria-label="Periodo">
+        <ion-segment-button value="3"><ion-label>3 meses</ion-label></ion-segment-button>
+        <ion-segment-button value="6"><ion-label>6 meses</ion-label></ion-segment-button>
+        <ion-segment-button value="12"><ion-label>12 meses</ion-label></ion-segment-button>
+        <ion-segment-button value="todo"><ion-label>Todo</ion-label></ion-segment-button>
+      </ion-segment>
+      <ion-select label="Departamento" labelPlacement="stacked" fill="outline" interface="popover"
+                  [value]="departamento()" (ionChange)="departamento.set($event.detail.value)">
+        <ion-select-option value="todos">Todos</ion-select-option>
+        @for (d of departamentos; track d) {
+          <ion-select-option [value]="d">{{ d }}</ion-select-option>
+        }
+      </ion-select>
+    </section>
+
+    @if (store.error()) {
+      <ion-note color="danger" class="aviso" role="alert">{{ store.error() }}</ion-note>
+    }
+
+    <!-- Widgets: los de estado son seleccionables y filtran el panel (output del componente) -->
+    <section class="rejilla-widgets" aria-label="Indicadores principales">
+      <app-widget-estadistico titulo="Gasto total" [valor]="kpis().total" formato="moneda" icono="cash-outline"
+        [descripcion]="kpis().numGastos + ' gastos en el periodo'" />
+      <app-widget-estadistico titulo="Aprobado" [valor]="kpis().aprobado" formato="moneda" icono="checkmark-done-outline"
+        color="success" [seleccionable]="true" [activo]="estado() === 'aprobado'" descripcion="Pulsa para filtrar"
+        (seleccionado)="alternarEstado('aprobado')" />
+      <app-widget-estadistico titulo="Pendiente de revisar" [valor]="kpis().pendiente" formato="moneda"
+        icono="hourglass-outline" color="warning" [seleccionable]="true" [activo]="estado() === 'pendiente'"
+        [descripcion]="kpis().numPendientes + ' gastos · pulsa para filtrar'" (seleccionado)="alternarEstado('pendiente')" />
+      <app-widget-estadistico titulo="Tasa de aprobación" [valor]="kpis().tasaAprobacion" formato="porcentaje"
+        icono="receipt-outline" color="medium" [seleccionable]="true" [activo]="estado() === 'rechazado'"
+        descripcion="Pulsa para ver los rechazados" (seleccionado)="alternarEstado('rechazado')" />
+    </section>
+
+    <section class="rejilla-graficos" aria-label="Gráficos">
+      <app-grafico class="tarjeta" titulo="Gasto por categoría" [configuracion]="graficoCategorias()"
+        [descripcion]="'Gráfico de gasto por categoría. ' + resumenCategorias()" />
+      <app-grafico class="tarjeta" titulo="Evolución mensual" [configuracion]="graficoMeses()"
+        [descripcion]="'Gráfico de gasto por mes. ' + resumenMeses()" />
+      <app-grafico class="tarjeta ancho-completo" titulo="Gasto por departamento" [configuracion]="graficoDepartamentos()"
+        [descripcion]="'Gráfico de gasto por departamento. ' + resumenDepartamentos()" />
+    </section>
+
+    <section class="tarjeta">
+      <app-tabla-datos titulo="Detalle de gastos" [columnas]="columnasTabla" [filas]="gastosFiltrados()"
+        [cargando]="store.cargando()" [tamanoPagina]="8" textoVacio="No hay gastos para estos filtros." />
+    </section>
+  </main>
+</ion-content>

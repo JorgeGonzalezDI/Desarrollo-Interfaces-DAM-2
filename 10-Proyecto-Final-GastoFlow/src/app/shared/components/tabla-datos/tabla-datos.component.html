@@ -1,0 +1,85 @@
+<div class="tabla-datos">
+  <ion-searchbar
+    class="buscador"
+    [placeholder]="'Buscar en ' + titulo().toLowerCase()"
+    [attr.aria-label]="'Buscar en ' + titulo()"
+    [debounce]="200"
+    (ionInput)="buscar($event.detail.value)"
+  ></ion-searchbar>
+
+  @if (cargando()) {
+    <div class="estado" role="status">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>Cargando datos…</span>
+    </div>
+  } @else if (filasVisibles().length === 0) {
+    <p class="estado" role="status">{{ busqueda() ? 'Ningún resultado para «' + busqueda() + '».' : textoVacio() }}</p>
+  } @else {
+    <div class="contenedor-tabla">
+      <table>
+        <caption>
+          {{ titulo() }}
+          <span class="contador">({{ filasVisibles().length }})</span>
+        </caption>
+        <thead>
+          <tr>
+            @for (col of columnas(); track col.clave) {
+              <th scope="col" [attr.aria-sort]="col.ordenable ? ariaSort(col) : null" [class.ocultar-movil]="col.ocultarEnMovil">
+                @if (col.ordenable) {
+                  <button type="button" class="ordenar" (click)="ordenarPor(col)">
+                    {{ col.titulo }}
+                    <span aria-hidden="true">{{ ariaSort(col) === 'ascending' ? '▲' : ariaSort(col) === 'descending' ? '▼' : '↕' }}</span>
+                  </button>
+                } @else {
+                  {{ col.titulo }}
+                }
+              </th>
+            }
+            @if (acciones().length) {
+              <th scope="col"><span class="solo-lector">Acciones</span></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filasPagina(); track fila.id) {
+            <tr>
+              @for (col of columnas(); track col.clave) {
+                <td [attr.data-titulo]="col.titulo" [class]="'tipo-' + (col.tipo ?? 'texto')" [class.ocultar-movil]="col.ocultarEnMovil">
+                  @if (col.tipo === 'estado') {
+                    <ion-badge [color]="colorEstado(col, fila)">{{ textoCelda(col, fila) }}</ion-badge>
+                  } @else {
+                    {{ textoCelda(col, fila) }}
+                  }
+                </td>
+              }
+              @if (acciones().length) {
+                <td class="acciones">
+                  @for (a of accionesDe(fila); track a.id) {
+                    <ion-button
+                      size="small"
+                      [fill]="'outline'"
+                      [color]="a.color ?? 'primary'"
+                      [attr.aria-label]="a.etiqueta + ': ' + descripcionFila()(fila)"
+                      (click)="emitir(a, fila)"
+                    >
+                      <ion-icon slot="start" [name]="a.icono" aria-hidden="true"></ion-icon>
+                      {{ a.etiqueta }}
+                    </ion-button>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPaginas() > 1) {
+      <nav class="paginacion" [attr.aria-label]="'Páginas de ' + titulo()">
+        <ion-button fill="clear" size="small" [disabled]="pagina() === 0" (click)="irAPagina(pagina() - 1)">Anterior</ion-button>
+        <span aria-live="polite">Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+        <ion-button fill="clear" size="small" [disabled]="pagina() + 1 >= totalPaginas()" (click)="irAPagina(pagina() + 1)">Siguiente</ion-button>
+      </nav>
+    }
+  }
+</div>

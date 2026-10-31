@@ -1,0 +1,296 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>GastoFlow · documentación técnica</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+	   <link rel="stylesheet" href="./styles/style.css">
+        <link rel="stylesheet" href="./styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+          <script>
+              // --- Iframe navigation tracking for Template Playground ---
+              function sendCurrentUrlToParent() {
+                  if (window.parent && window.parent !== window) {
+                      window.parent.postMessage({
+                          type: 'compodoc-iframe-navigate',
+                          url: window.location.pathname + window.location.hash
+                      }, '*');
+                  }
+              }
+              window.addEventListener('hashchange', sendCurrentUrlToParent, false);
+              window.addEventListener('popstate', sendCurrentUrlToParent, false);
+              window.addEventListener('DOMContentLoaded', sendCurrentUrlToParent, false);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="./" class="navbar-brand">GastoFlow · documentación técnica</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search">
+    <button type="button"
+        class="search-input-clear"
+        aria-label="Clear search"
+        data-search-input-clear>&times;</button>
+</div>
+            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content readme">
+                   <div class="content-data">
+
+
+<h1>GastoFlow · Gestión de gastos corporativos</h1>
+<p>Aplicación multiplataforma (<strong>PWA / híbrida</strong>) para registrar, aprobar y analizar los gastos de una empresa.
+Proyecto final del módulo <strong>Desarrollo de Interfaces (0488)</strong> · DAM 2 · Nebrija · Jorge González Gómez.</p>
+<table class="table table-bordered compodoc-table">
+<thead>
+<tr><th></th><th></th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Producción</strong></td><td>Vercel (despliegue automático desde <code>main</code>)</td></tr>
+<tr><td><strong>Stack</strong></td><td>Ionic 9 + Angular 22 (standalone, signals, sin zone.js) · Supabase (PostgreSQL, Auth, REST, Realtime) · Chart.js · jsPDF</td></tr>
+<tr><td><strong>Documentación</strong></td><td><a href="docs/manual-usuario.md">Manual de usuario</a> · <a href="docs/security-architecture.md">Anexo de seguridad</a> · <a href="docs/guia-del-codigo.md">Guía del código</a> · Documentación técnica generada (Compodoc): <code>docs/compodoc/</code> y <code>/documentacion</code> en la web</td></tr>
+</tbody>
+</table>
+<p><img src="docs/capturas/09-dashboard.png" alt="Cuadro de mando" class="img-responsive"></p>
+<h2>Funcionalidades</h2>
+<ul>
+<li><strong>Empleado:</strong> se registra con validación asíncrona del correo, registra gastos (formulario reactivo con validación dinámica y aviso si sale sin guardar), y consulta y filtra sus gastos con el estado actualizado en tiempo real.</li>
+<li><strong>Administración:</strong> bandeja de aprobaciones (aprobar o rechazar con motivo) y cuadro de mando con indicadores, 3 gráficos y filtros por periodo, departamento y estado. Exporta informes <strong>PDF</strong> y <strong>CSV</strong> de lo que está viendo.</li>
+<li><strong>Seguridad en 3 capas:</strong> permisos RBAC en la interfaz, guards <code>canMatch</code> + interceptor HTTP en el router, y RLS + triggers en PostgreSQL (<a href="docs/security-architecture.md">anexo</a>).</li>
+<li><strong>Accesibilidad (WCAG 2.1 AA):</strong> contraste AA, navegación completa por teclado, ARIA, zoom permitido, diseño <em>mobile-first</em>. Lighthouse: Accessibility 100 · Best Practices 100 · SEO 100.</li>
+</ul>
+<h2>Arquitectura (MVVM)</h2>
+<b>Example :</b><div><pre class="line-numbers"><code class="language-none">src/app/
+  core/                 una sola instancia en toda la app (como la capa de servicios en Java)
+    auth/               AuthService (sesión Supabase), guards, authInterceptor, cambiosSinGuardarGuard
+    api/                ApiRestService: HttpClient contra la API REST de Supabase (/rest/v1)
+    data/               GastosService (store con signals + Realtime), UsuariosService
+    models/             tipos: RBAC (roles y permisos), sesión, gastos
+    supabase/           cliente único de Supabase (Auth y Realtime)
+    ui/  utils/         avisos (toasts), formato, validadores, exportación CSV/PDF
+  shared/components/    componentes reutilizables y agnósticos (input/output, OnPush)
+    tabla-datos/        tabla avanzada genérica: buscador, ordenación, paginación, acciones
+    widget-estadistico/ indicador (KPI) que puede emitir un evento de selección
+    grafico/            envoltorio de Chart.js con ciclo de vida (se destruye al salir)
+  layout/shell/         menú lateral (ion-split-pane) + carga de datos y canal de tiempo real
+  features/             una carpeta por pantalla, todas con carga diferida
+supabase/               01_esquema.sql (tablas, RLS, triggers, Realtime) · 02_datos_demo.sql
+docs/                   manual, anexo de seguridad, guía del código, capturas, Compodoc</code></pre></div><ul>
+<li><strong>Vista:</strong> componentes y plantillas.</li>
+<li><strong>ViewModel:</strong> servicios con signals (<code>GastosService</code> es un <em>store</em>: estado privado y <code>computed</code> públicos de solo lectura).</li>
+<li><strong>Modelo:</strong> la API REST de Supabase.</li>
+<li>Gastos y categorías se cargan <strong>en paralelo</strong> con <code>forkJoin</code>.</li>
+</ul>
+<h2>Puesta en marcha</h2>
+<ol>
+<li>Crea un proyecto en Supabase y ejecuta, en el SQL Editor, <code>supabase/01_esquema.sql</code>. Después crea los usuarios en Authentication y ejecuta <code>supabase/02_datos_demo.sql</code> (datos sintéticos).</li>
+<li>Copia <code>.env.example</code> como <code>.env</code> y rellena <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> (la clave <strong>pública</strong>). <code>.env</code> no se sube a Git.</li>
+<li>Ejecuta:<b>Example :</b><div><pre class="line-numbers"><code class="language-powershell">npm install
+npm start          # http://localhost:4200
+npm test           # tests unitarios (Vitest)
+npm run build      # producción en www/ (PWA con service worker)
+npm run docs       # regenera la documentación técnica (Compodoc)</code></pre></div></li>
+<li><strong>Vercel:</strong><ul>
+<li><em>Root Directory</em> = <code>10-Proyecto-Final-GastoFlow</code>.</li>
+<li>Variables de entorno <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code>.</li>
+<li><code>vercel.json</code> ejecuta <code>npm run build:vercel</code>: <strong>tests + build</strong>. Si falla un test, no se despliega.</li>
+</ul>
+</li>
+</ol>
+<h2>Flujo de trabajo con Git</h2>
+<ul>
+<li><code>main</code>: versiones terminadas (etiquetas <code>v0.1.0</code>, <code>v1.0.0</code>). Vercel publica desde aquí.</li>
+<li><code>develop</code>: integración.</li>
+<li><code>feature/*</code>: una rama por funcionalidad, fusionada en <code>develop</code> con <code>--no-ff</code>.</li>
+<li><strong>CI:</strong> GitHub Actions (<code>.github/workflows/gastoflow-ci.yml</code>) pasa los tests y compila en cada push o Pull Request.</li>
+</ul>
+<h2>Calidad</h2>
+<table class="table table-bordered compodoc-table">
+<thead>
+<tr><th>Prueba</th><th>Resultado</th></tr>
+</thead>
+<tbody>
+<tr><td>Tests unitarios (Vitest)</td><td>14 tests en verde: RBAC, guards, validadores, CSV, lógica de la tabla</td></tr>
+<tr><td>Pruebas de extremo a extremo (Playwright)</td><td>Login, <code>returnUrl</code>, acceso denegado, alta con <code>canDeactivate</code>, validación asíncrona, aprobar y rechazar, dashboard y exportaciones, 401 → renovación del token</td></tr>
+<tr><td>Lighthouse (login)</td><td>Accessibility <strong>100</strong> · Best Practices <strong>100</strong> · SEO <strong>100</strong></td></tr>
+</tbody>
+</table>
+<p>Datos 100 % sintéticos: personas y empresas ficticias. Ninguna clave privada en el repositorio.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 0;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'readme';
+            var COMPODOC_CURRENT_PAGE_URL = 'index.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var updateDarkModeSwitchOffset = function () {
+                    var content = document.querySelector('.content');
+                    var scrollbarWidth = 0;
+
+                    if (content) {
+                         scrollbarWidth = Math.max(0, content.offsetWidth - content.clientWidth);
+                    }
+
+                    document.documentElement.style.setProperty(
+                         '--content-scrollbar-width',
+                         scrollbarWidth + 'px'
+                    );
+               };
+
+               updateDarkModeSwitchOffset();
+               requestAnimationFrame(updateDarkModeSwitchOffset);
+               window.addEventListener('resize', updateDarkModeSwitchOffset);
+
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="./js/libs/custom-elements.min.js"></script>
+       <script src="./js/libs/lit-html.js"></script>
+
+       <script src="./js/menu-wc.js" defer></script>
+
+       <script src="./js/libs/bootstrap-native.js"></script>
+
+       <script src="./js/libs/es6-shim.min.js"></script>
+       <script src="./js/libs/EventDispatcher.js"></script>
+       <script src="./js/libs/promise.min.js"></script>
+
+       <script src="./js/compodoc.js"></script>
+
+       <script src="./js/tabs.js"></script>
+       <script src="./js/menu.js"></script>
+       <script src="./js/libs/clipboard.min.js"></script>
+       <script src="./js/libs/prism.js"></script>
+       <script src="./js/sourceCode.js"></script>
+          <script src="./js/search/search.js"></script>
+          <script src="./js/search/lunr.min.js"></script>
+          <script src="./js/search/search-lunr.js"></script>
+          <script src="./js/search/search_index.js"></script>
+       <script src="./js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

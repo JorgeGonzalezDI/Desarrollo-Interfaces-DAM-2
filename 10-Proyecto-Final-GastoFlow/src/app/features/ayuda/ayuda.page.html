@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Ayuda</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main>
+    <h1>Manual de usuario</h1>
+    <p>GastoFlow sirve para registrar los gastos de empresa y que Administración los revise.</p>
+
+    <ion-accordion-group>
+      <ion-accordion value="acceso">
+        <ion-item slot="header"><ion-label>¿Cómo entro o creo mi cuenta?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Inicia sesión con tu correo y contraseña. Si es tu primera vez, pulsa <strong>Crea tu cuenta</strong>:
+          la app comprueba al momento que el correo no esté ya registrado y pide una contraseña de al menos
+          8 caracteres con letras y números. Las cuentas nuevas tienen el rol de empleado. Si abres una página
+          privada sin sesión, la app te pide entrar y después te devuelve a esa página.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="registrar">
+        <ion-item slot="header"><ion-label>¿Cómo registro un gasto?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Ve a <strong>Registrar gasto</strong>, indica la fecha (no puede ser futura), la categoría, el importe
+          y una descripción. En los desplazamientos son obligatorios los kilómetros. El gasto queda
+          <strong>pendiente</strong> hasta que Administración lo revise. Si sales con el formulario a medias,
+          la app te pregunta antes de perder los datos.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="estado">
+        <ion-item slot="header"><ion-label>¿Cómo sé si me han aprobado un gasto?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          En <strong>Mis gastos</strong> verás el estado de cada uno (pendiente, aprobado o rechazado). La lista se
+          actualiza <strong>en tiempo real</strong>: no hace falta recargar. Puedes buscar, ordenar por columna y
+          filtrar por estado. Los gastos pendientes se pueden eliminar.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="admin">
+        <ion-item slot="header"><ion-label>Administración: aprobar, cuadro de mando e informes</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          En <strong>Aprobaciones</strong> aparecen los gastos pendientes de toda la plantilla; al rechazar uno hay
+          que indicar el motivo. El <strong>Cuadro de mando</strong> muestra indicadores y gráficos filtrables por
+          periodo, departamento y estado (pulsa un indicador para filtrar). Con <strong>Exportar CSV</strong> o
+          <strong>Exportar PDF</strong> descargas el informe de lo que estás viendo.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="roles">
+        <ion-item slot="header"><ion-label>¿Por qué no veo algunas opciones del menú?</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Cada usuario tiene un rol. Los <strong>empleados</strong> gestionan sus propios gastos; el equipo de
+          <strong>Administración</strong> además aprueba gastos, ve el cuadro de mando y exporta informes.
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="teclado">
+        <ion-item slot="header"><ion-label>Accesibilidad: teclado y lector de pantalla</ion-label></ion-item>
+        <div class="ion-padding" slot="content">
+          Toda la app se usa con teclado: <kbd>Tab</kbd> para avanzar, <kbd>Mayús</kbd> + <kbd>Tab</kbd> para
+          retroceder, <kbd>Enter</kbd> o <kbd>Espacio</kbd> para activar y <kbd>Esc</kbd> para cerrar menús y
+          diálogos. Los gráficos tienen una descripción de texto para lectores de pantalla y la app respeta el
+          zoom del navegador.
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </main>
+</ion-content>

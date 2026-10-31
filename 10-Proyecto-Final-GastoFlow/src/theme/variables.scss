@@ -1,2 +1,10 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Tema de GastoFlow. Más info: https://ionicframework.com/docs/theming/
+// Color primario azul oscuro corporativo: contraste > 4.5:1 con texto blanco (WCAG AA).
+:root {
+  --ion-color-primary: #1b3a5c;
+  --ion-color-primary-rgb: 27, 58, 92;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #183351;
+  --ion-color-primary-tint: #324e6c;
+}

@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Inicio</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main>
+    @if (denegado()) {
+      <ion-note color="danger" class="aviso" role="alert">
+        No tienes permiso para acceder a <strong>{{ denegado() }}</strong>.
+      </ion-note>
+    }
+
+    <header class="saludo">
+      <h1>Hola, {{ auth.sesion()?.nombre }}</h1>
+      <p>{{ auth.nombreRol() }} · {{ auth.sesion()?.departamento }}</p>
+    </header>
+
+    <section aria-labelledby="titulo-resumen">
+      <h2 id="titulo-resumen" class="solo-lector">Resumen de tus gastos</h2>
+      <div class="rejilla-widgets">
+        <app-widget-estadistico titulo="Pendiente de revisar" [valor]="resumen().pendiente" formato="moneda"
+          icono="hourglass-outline" color="warning" [descripcion]="resumen().numPendientes + ' gastos'" />
+        <app-widget-estadistico titulo="Aprobado este mes" [valor]="resumen().aprobadoMes" formato="moneda"
+          icono="checkmark-circle-outline" color="success" />
+        <app-widget-estadistico titulo="Gastos rechazados" [valor]="resumen().rechazados"
+          icono="close-circle-outline" color="danger" />
+        <app-widget-estadistico titulo="Gastos registrados" [valor]="resumen().total"
+          icono="wallet-outline" color="primary" />
+      </div>
+    </section>
+
+    <div class="acciones">
+      <ion-button routerLink="/gastos/nuevo">
+        <ion-icon slot="start" name="add-circle-outline" aria-hidden="true"></ion-icon>
+        Registrar un gasto
+      </ion-button>
+      <ion-button fill="outline" routerLink="/gastos">Ver mis gastos</ion-button>
+    </div>
+
+    @if (auth.tienePermiso('gastos:aprobar')) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title><h2 class="titulo-card">Administración</h2></ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>Hay <strong>{{ store.pendientes().length }}</strong> gastos de la plantilla esperando revisión.</p>
+          <div class="acciones">
+            <ion-button size="small" routerLink="/admin/aprobaciones">Revisar gastos</ion-button>
+            <ion-button size="small" fill="outline" routerLink="/admin/dashboard">Cuadro de mando</ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+  </main>
+</ion-content>

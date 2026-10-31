@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Aprobaciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main>
+    <h1>Aprobaciones</h1>
+    <p>
+      <strong>{{ store.pendientes().length }}</strong> gastos pendientes por un total de
+      <strong>{{ importePendiente() }}</strong>.
+    </p>
+
+    <ion-segment [value]="vista()" (ionChange)="cambiarVista($event.detail.value)" aria-label="Qué gastos ver">
+      <ion-segment-button value="pendientes"><ion-label>Pendientes</ion-label></ion-segment-button>
+      <ion-segment-button value="todos"><ion-label>Todos</ion-label></ion-segment-button>
+    </ion-segment>
+
+    @if (store.error()) {
+      <ion-note color="danger" class="aviso" role="alert">{{ store.error() }}</ion-note>
+    }
+
+    <app-tabla-datos
+      titulo="Gastos de la plantilla"
+      [columnas]="columnas"
+      [filas]="filas()"
+      [acciones]="acciones()"
+      [cargando]="store.cargando()"
+      [descripcionFila]="describir"
+      textoVacio="No hay gastos pendientes. ¡Todo al día!"
+      (accion)="alAccion($event)"
+    />
+  </main>
+</ion-content>
