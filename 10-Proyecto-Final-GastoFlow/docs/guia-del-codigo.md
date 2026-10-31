@@ -65,3 +65,25 @@ Un empleado escribe `/admin/dashboard`:
 1. El router prueba la ruta `''`. `authGuard` comprueba que hay sesión válida y deja pasar.
 2. Dentro, la ruta `admin/dashboard` tiene `permisoGuard('dashboard:ver')`. El empleado no tiene ese permiso, así que el guard devuelve un `UrlTree` hacia `/inicio?denegado=/admin/dashboard`.
 3. El código del dashboard **no se descarga**. La página de inicio lee `denegado` y muestra el aviso.
+
+## 5. Novedades de la v1.0.0 (Supabase, componentes e informes)
+
+| Archivo | Qué hace |
+|---|---|
+| `scripts/generar-config.mjs` | Antes de `start`, `build` y `test`, escribe `src/environments/supabase.config.ts` con la URL y la clave pública, leídas de `.env` (local) o de las variables de entorno (Vercel). Así ninguna clave está en el repositorio. |
+| `core/supabase/supabase.service.ts` | Crea el cliente de Supabase **una sola vez**. Se usa para Auth y Realtime. |
+| `core/auth/auth.service.ts` | Login, registro, logout y renovación del token con Supabase Auth. El **rol** se lee de la tabla `perfiles`. `listo` es la promesa que esperan los guards. |
+| `core/auth/auth.interceptor.ts` | Añade `apikey` y `Authorization: Bearer` a las peticiones a la API REST propia; ante un 401 renueva el token y reintenta **una vez**; ante un 403 avisa. |
+| `core/auth/cambios-sin-guardar.guard.ts` | `canDeactivate`: pregunta antes de salir de un formulario con cambios. |
+| `core/api/api-rest.service.ts` | "DAO" genérico con `HttpClient` contra `/rest/v1` (listar, crear, actualizar, eliminar, rpc). |
+| `core/data/gastos.service.ts` | **Store** de gastos con signals. Carga en paralelo con `forkJoin`, crea, aprueba y elimina, y se suscribe a **Realtime** (los cambios llegan por WebSocket). |
+| `core/utils/validadores.ts` | Validadores propios, incluido el **asíncrono** `emailDisponibleValidator` (espera 400 ms, cancela con `switchMap` y llama a la función SQL `email_disponible`). |
+| `core/utils/exportar.ts`, `informe-pdf.ts` | CSV compatible con Excel (`;`, BOM) e informe PDF con jsPDF, que se carga de forma **dinámica**, solo al exportar. |
+| `shared/components/tabla-datos` | Tabla **genérica `<T>`**: recibe columnas, filas y acciones por `input()` y emite `(accion)` con `output()`. Su lógica de filtrar y ordenar es una función pura con tests. |
+| `shared/components/widget-estadistico` | Indicador (KPI); si es seleccionable es un `<button>` y emite `(seleccionado)`. |
+| `shared/components/grafico` | Envoltorio de Chart.js: lo crea en `afterNextRender`, lo actualiza con `effect()` y lo destruye con `DestroyRef`, para no dejar fugas de memoria. |
+| `features/auth/registro` | Formulario reactivo con validación síncrona, **asíncrona** y de **grupo** (las contraseñas coinciden). |
+| `features/gastos/gasto-form` | Alta con grupo anidado `detalles` (que se guarda en la columna jsonb) y validación dinámica de kilómetros. |
+| `features/admin/aprobaciones`, `dashboard` | Reutilizan la tabla, los widgets y los gráficos. El dashboard es una cadena de `computed()`: al cambiar un filtro o llegar un dato en tiempo real, todo se recalcula solo. |
+| `supabase/*.sql` | Tablas, **RLS**, triggers de reglas de negocio, función de validación de correo, publicación de Realtime y datos de demo. |
+| `ngsw-config.json`, `public/manifest.webmanifest` | **PWA**: service worker (caché de la app) y manifiesto para instalarla. |

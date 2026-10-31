@@ -1,153 +1,134 @@
-# Memoria técnica: arquitectura de seguridad y control de acceso
+# Anexo de seguridad: arquitectura de control de acceso
 
-**Proyecto:** GastoFlow, gestión de gastos corporativos (Ionic 9 + Angular 22 standalone)  
+**Proyecto:** GastoFlow, gestión de gastos corporativos (Ionic 9 + Angular 22 standalone + Supabase)  
 **Módulo:** Desarrollo de Interfaces (0488) · DAM 2 · Nebrija  
-**Autor:** Jorge González Gómez · **Rama de trabajo:** `develop`
+**Autor:** Jorge González Gómez · **Versión:** v1.0.0
 
-> **Estado de implementación.** La memoria describe lo que ya está en el código (marcado **[Hecho]**) y lo que está diseñado y se implementa al conectar Supabase en la Fase 3 (marcado **[Fase 3]**). Los fragmentos de código son los del repositorio.
+La seguridad se organiza en **tres capas independientes**. Si una falla, las otras siguen protegiendo los datos:
+
+| Capa | Dónde | Qué decide |
+|---|---|---|
+| 1. Interfaz | menú, botones, widgets (`signals` computadas) | Qué ve el usuario |
+| 2. Router e interceptor | guards `canMatch`/`canDeactivate`, `authInterceptor` | A dónde puede ir y con qué credenciales viaja cada petición |
+| 3. Base de datos | políticas **RLS**, triggers y funciones de PostgreSQL (Supabase) | Qué filas puede leer o modificar, aunque alguien se salte la interfaz |
 
 ---
 
 ## A. Fundamentación teórico-técnica
 
-### A.1 Functional Guards en Angular / Ionic standalone
+### A.1 Functional Guards (Angular / Ionic standalone)
 
-Un **guard** es una función que el router ejecuta durante una navegación para decidir si se permite. Desde Angular 15 se escriben como **funciones** (`CanMatchFn`, `CanActivateFn`...) en lugar de clases que implementan una interfaz (`implements CanActivate`, ya obsoleto). Obtienen sus dependencias con `inject()` y devuelven:
+Un **guard** es una función que el router ejecuta durante la navegación. Desde Angular 15 se escriben como **funciones** (`CanMatchFn`, `CanActivateFn`, `CanDeactivateFn`) en lugar de clases con `implements CanActivate`, que es la forma obsoleta. Obtienen sus dependencias con `inject()` y devuelven `true`, `false` o un `UrlTree`, que redirige; también pueden devolver una `Promise` o un `Observable` de cualquiera de ellos.
 
-- `true`: la navegación continúa.
-- `false`: se cancela (en `canMatch`, la ruta se ignora y el router prueba la siguiente).
-- `UrlTree`: se cancela y se **redirige** a esa URL (p. ej. `/login?returnUrl=...`).
-- También pueden devolver `Promise` u `Observable` de cualquiera de los anteriores.
+**Ciclo dentro de una navegación:**
 
-**Ciclo de vida dentro de una navegación:**
+1. Empieza la navegación (`NavigationStart`).
+2. **Reconocimiento** de la URL, donde se ejecuta **`canMatch`**.
+3. **Comprobación de guards**: `canDeactivate` de la página que se abandona y `canActivateChild` / `canActivate` de la nueva.
+4. Resolvers.
+5. Descarga del componente (`loadComponent`) y activación (`NavigationEnd`).
 
-1. `NavigationStart`.
-2. **Reconocimiento de la URL**: el router recorre el árbol de rutas. Aquí se ejecuta **`canMatch`**, *antes* de dar una ruta por coincidente (y antes de descargar su `loadChildren`).
-3. **Comprobación de guards** sobre las rutas ya elegidas: primero **`canDeactivate`** de la página que se abandona y después **`canActivateChild`** y **`canActivate`** de las nuevas.
-4. Resolvers (`resolve`).
-5. Descarga de los componentes con `loadComponent` y activación de la vista (`NavigationEnd`).
-
-| Tipo | Cuándo se ejecuta | Para qué sirve |
+| Tipo | Cuándo | Uso en GastoFlow |
 |---|---|---|
-| `canMatch` | Al reconocer la URL | Decidir si la ruta "existe" para este usuario. Evita descargar código ajeno y permite tener la misma URL con componentes distintos según el rol. Sustituye al antiguo `canLoad`. |
-| `canActivate` | Con la ruta ya reconocida | Permitir o no entrar en una ruta concreta. |
-| `canActivateChild` | Antes de entrar en cualquier hija | Proteger un grupo de rutas hijas a la vez. |
-| `canDeactivate` | Al intentar salir de una página | Evitar perder cambios sin guardar (p. ej. un formulario de gasto a medias). |
+| `canMatch` | Durante el reconocimiento, antes de aceptar la ruta | `authGuard`, `guestGuard`, `permisoGuard(...)` |
+| `canActivate` | Con la ruta ya reconocida | No se usa: `canMatch` llega antes |
+| `canDeactivate` | Al intentar salir de la página | `cambiosSinGuardarGuard` en el alta de gastos |
 
-**`canActivate` frente a `canMatch` (rendimiento y lazy loading).** Con `canActivate`, el router primero reconoce la ruta. Si usa `loadChildren`, la configuración hija **ya se ha descargado** para poder reconocerla, aunque luego el guard la bloquee. Con `canMatch` la decisión se toma antes: si falla, nada de esa rama se descarga ni se construye. Por eso GastoFlow protege la zona privada y las rutas de administración con `canMatch`.
+**`canActivate` frente a `canMatch`.**
+- Con `canActivate`, el router primero da la ruta por buena. Si usa `loadChildren`, la configuración hija **ya se ha descargado** aunque luego se bloquee.
+- Con `canMatch`, si el guard falla la rama "no existe" para ese usuario: no se descarga ni se construye.
 
-Además se ha **quitado la precarga** (`PreloadAllModules`) que trae la plantilla de Ionic: precargaría en segundo plano todas las páginas, incluidas las de administración, aunque el usuario sea un empleado.
+Además se quitó la precarga (`PreloadAllModules`) de la plantilla de Ionic. Con ella, el código de las páginas de administración se descargaría en segundo plano también para los empleados.
 
 ### A.2 HTTP Interceptors (`HttpInterceptorFn`)
 
-Un interceptor es una función por la que pasa **cada petición** de `HttpClient` antes de salir, y su respuesta al volver. Los interceptores forman una **cadena (pipeline)**: cada uno recibe la petición y la función `next` para pasarla al siguiente; el último la envía al servidor. Es el patrón *Chain of Responsibility*, el mismo que los `Filter` de Servlets en Java.
+Cada petición de `HttpClient` atraviesa una **cadena de interceptores**: cada uno recibe la petición y la función `next` para pasarla al siguiente. Es el patrón *Chain of Responsibility*, como los `Filter` de los Servlets en Java.
 
-- **Cabecera de autorización.** Las peticiones (`HttpRequest`) son **inmutables**, así que el interceptor crea una copia con `req.clone({ setHeaders: { Authorization: 'Bearer <token>' } })`. Así ningún servicio tiene que acordarse de añadir la cabecera. Solo se añade a peticiones hacia la API propia, para no filtrar el token a terceros.
-- **Errores de sesión centralizados.** Con `catchError` en la respuesta:
-  - **401 Unauthorized** (el token no vale o ha caducado): se intenta renovar la sesión una única vez. Si se renueva, se repite la petición original con el token nuevo. Si no, se cierra la sesión y se redirige a `/login?returnUrl=<página actual>`.
-  - **403 Forbidden** (sesión válida pero sin permiso): no se cierra la sesión. Se avisa al usuario y se le devuelve a su inicio.
-- **Refresh token.** El *access token* dura poco (en Supabase, 1 hora) y el *refresh token* sirve para pedir uno nuevo sin volver a escribir la contraseña. Dos reglas: no intentar renovar desde la propia petición de renovación (evita bucles) y, si varias peticiones reciben 401 a la vez, que todas esperen a **una sola** renovación compartida.
+- **Cabeceras.** `HttpRequest` es inmutable, así que se clona con `setHeaders`: `apikey` (la clave pública que exige Supabase) y `Authorization: Bearer <JWT>`. Solo se añaden a peticiones hacia la API REST propia, para no filtrar el token a terceros.
+- **401 Unauthorized** (token caducado o inválido): se renueva la sesión **una sola vez** con el *refresh token* y se repite la petición. Para evitar bucles, la petición reintentada se marca con un `HttpContextToken`. Si la renovación falla, se cierra la sesión y se redirige a `/login?returnUrl=<página actual>`.
+- **403 Forbidden** (con sesión pero sin permiso; por ejemplo, una política RLS lo impide): se avisa al usuario y **no** se cierra la sesión.
+- **Renovación compartida.** Si varias peticiones reciben 401 a la vez, todas esperan a la **misma** promesa de renovación (`AuthService.refrescarSesion()`), y no se lanzan varias en paralelo.
 
-### A.3 Control de acceso basado en roles (RBAC)
+### A.3 RBAC (Role-Based Access Control)
 
-**RBAC** (*Role-Based Access Control*, modelo NIST) define tres conjuntos y dos relaciones: **usuarios ↔ roles ↔ permisos**. Al usuario no se le dan permisos directamente: se le asigna un rol, y el rol agrupa permisos. Frente a modelar identidades sueltas ("el usuario 7 puede aprobar"), cambiar lo que puede hacer un tipo de usuario es editar **un** rol, no a cada persona.
+RBAC (modelo NIST) relaciona **usuarios ↔ roles ↔ permisos**. Al usuario no se le dan permisos directamente: se le asigna un rol, y el rol agrupa permisos.
 
 | | Autenticación (AuthN) | Autorización (AuthZ) |
 |---|---|---|
 | Pregunta | ¿Quién eres? | ¿Qué puedes hacer? |
-| Cómo | Credenciales → sesión / token | Rol y permisos del token frente a la acción pedida |
-| En GastoFlow | `AuthService.login()` y `authGuard` | `PERMISOS_POR_ROL`, `permisoGuard` y menú filtrado |
+| En GastoFlow | Supabase Auth (email + contraseña → JWT), `authGuard` | `PERMISOS_POR_ROL`, `permisoGuard`, políticas RLS |
 | Fallo HTTP | 401 | 403 |
 
-**Encapsulamiento del token.** Un JWT lleva en su *payload* unos **claims**: `sub` (id), `email`, `role` y `exp` (caducidad). GastoFlow guarda esos datos en un tipo `SesionClaims`, que tiene la misma forma que el payload. Solo los gestiona un **servicio central** (`AuthService`), que los expone como signals de solo lectura: `sesion`, `rol`, `permisos`, `estaAutenticado`. Guards, menú y páginas **preguntan al servicio**; ninguno lee el storage ni decodifica el token por su cuenta. Así, cambiar la sesión simulada por Supabase solo toca ese servicio.
+**Encapsulamiento del token.**
+- El JWT de Supabase lleva los claims `sub` (id del usuario), `email` y `exp` (caducidad).
+- El **rol no se toma del cliente**: `AuthService` lo lee de la tabla `perfiles`, que está protegida por RLS, y lo guarda junto a los claims en un único tipo, `SesionClaims`.
+- `AuthService` expone ese estado como signals de solo lectura: `sesion`, `rol`, `permisos`, `estaAutenticado`, más `tienePermiso()`.
+- Guards, interceptor, menú y páginas **preguntan al servicio**; ninguno lee el token ni el storage por su cuenta.
 
 ---
 
-## B. Justificación de implementación en el proyecto
+## B. Implementación en el proyecto
 
-### B.1 Ubicación en el árbol de rutas y servicios
+### B.1 Rutas, roles y servicios
 
-**Roles y pantallas** (`src/app/core/models/rol.model.ts`) **[Hecho]**
-
-| Pantalla | Ruta | Permiso | `empleado` | `admin` |
+| Pantalla | Ruta | Guard / permiso | `empleado` | `admin` |
 |---|---|---|:---:|:---:|
-| Login | `/login` | sin sesión (`guestGuard`) | — | — |
-| Inicio, Ayuda | `/inicio`, `/ayuda` | sesión (`authGuard`) | Sí | Sí |
+| Login, Registro | `/login`, `/registro` | `guestGuard` (solo sin sesión) | — | — |
+| Inicio, Ayuda | `/inicio`, `/ayuda` | `authGuard` | Sí | Sí |
 | Mis gastos | `/gastos` | `gastos:ver-propios` | Sí | Sí |
+| Registrar gasto | `/gastos/nuevo` | `gastos:crear` + `cambiosSinGuardarGuard` | Sí | Sí |
 | Aprobaciones | `/admin/aprobaciones` | `gastos:aprobar` | **Bloqueada** | Sí |
 | Cuadro de mando | `/admin/dashboard` | `dashboard:ver` | **Bloqueada** | Sí |
 
 ```ts
-// src/app/core/models/rol.model.ts  [Hecho]
-export const PERMISOS_POR_ROL: Readonly<Record<Rol, readonly Permiso[]>> = {
+// src/app/core/models/rol.model.ts: la ÚNICA matriz de permisos del cliente
+export const PERMISOS_POR_ROL = {
   empleado: ['gastos:ver-propios', 'gastos:crear'],
   admin: ['gastos:ver-propios', 'gastos:crear', 'gastos:ver-todos', 'gastos:aprobar',
           'dashboard:ver', 'informes:exportar', 'usuarios:gestionar'],
 };
-```
 
-**Guards en `app.routes.ts`** **[Hecho]**. Hay un `authGuard` en el padre de toda la zona privada y un `permisoGuard(...)` en cada ruta sensible. `permisoGuard` es una **factoría**: recibe el permiso y devuelve el guard configurado.
-
-```ts
 // src/app/app.routes.ts (extracto)
-{ path: 'login', canMatch: [guestGuard], loadComponent: () => import('./features/auth/login/login.page') ... },
-{
-  path: '',
-  canMatch: [authGuard],                       // ¿hay sesión válida?
-  loadComponent: () => import('./layout/shell/shell.component') ...,
+{ path: 'login', canMatch: [guestGuard], loadComponent: ... },
+{ path: '', canMatch: [authGuard], loadComponent: () => import('./layout/shell/shell.component') ...,
   children: [
-    { path: 'gastos',             canMatch: [permisoGuard('gastos:ver-propios')], ... },
-    { path: 'admin/aprobaciones', canMatch: [permisoGuard('gastos:aprobar')], ... },
-    { path: 'admin/dashboard',    canMatch: [permisoGuard('dashboard:ver')], ... },
-  ],
-},
+    { path: 'gastos/nuevo', canMatch: [permisoGuard('gastos:crear')],
+      canDeactivate: [cambiosSinGuardarGuard], loadComponent: ... },
+    { path: 'admin/aprobaciones', canMatch: [permisoGuard('gastos:aprobar')], loadComponent: ... },
+    { path: 'admin/dashboard',    canMatch: [permisoGuard('dashboard:ver')],  loadComponent: ... },
+  ] },
 ```
 
-**Redirección contextual** **[Hecho]**:
+- **Guards asíncronos.** `authGuard` hace `await auth.listo` antes de decidir: espera a que Supabase recupere la sesión guardada, así un F5 en una página privada no expulsa al usuario. Si el token ha caducado, intenta renovarlo antes de mandar al login.
+- **Redirección contextual:**
+  - Sin sesión → `/login?returnUrl=/admin/dashboard`; tras el login se vuelve a esa URL.
+  - Sin permiso → `/inicio?denegado=/admin/dashboard`, con un aviso accesible (`role="alert"`).
+- **Registro del interceptor.** Se hace una sola vez, en `app.config.ts`, con `provideHttpClient(withFetch(), withInterceptors([authInterceptor]))`. Los datos SQL se piden con `HttpClient` a la API REST de Supabase (`/rest/v1/...`, en `ApiRestService`) precisamente para que todas las peticiones pasen por él. `supabase-js` se usa solo para Auth y Realtime.
 
-- Sin sesión, `authGuard` reconstruye la URL pedida a partir de los *segments* y redirige a `/login?returnUrl=/admin/dashboard`. Tras el login, `LoginPage` vuelve a esa URL.
-- Sin permiso, `permisoGuard` manda al usuario a `/inicio?denegado=/admin/dashboard`, y la página de inicio le avisa con un mensaje accesible (`role="alert"`).
-- Una sesión caducada (`exp`) se cierra en el siguiente cambio de pantalla (`haySesionValida()`).
+### B.2 Control visual condicional
 
-**Registro del interceptor** **[Fase 3]**. Se registra **una sola vez**, en la configuración global, para que lo atraviesen todas las peticiones de `HttpClient`. Los datos SQL se leerán de la API REST de Supabase (`/rest/v1/...`) con `HttpClient`, precisamente para que pasen por él.
+- **Menú lateral.** Es un `computed()` que filtra las opciones por `auth.permisos()`. Un empleado no ve "Aprobaciones" ni "Cuadro de mando".
+- **Botones de acción.** Aprobar y Rechazar se generan solo si `auth.tienePermiso('gastos:aprobar')`. Exportar CSV/PDF solo aparece con `informes:exportar`.
+- **Sin "parpadeos".** Como el menú y los botones son signals, al cerrar sesión o cambiar de usuario la interfaz se recalcula sola.
+- **Ocultar no es proteger.** La protección real está en la base de datos.
 
-```ts
-// src/app/app.config.ts (Fase 3)
-provideHttpClient(withInterceptors([authInterceptor]))
+### B.3 Seguridad en la base de datos (Supabase)
 
-// src/app/core/auth/auth.interceptor.ts (diseño)
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.accessToken();                       // del servicio central
-  const esApiPropia = req.url.startsWith(environment.supabaseUrl);
-  const peticion = token && esApiPropia
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
-  return next(peticion).pipe(
-    catchError((err: HttpErrorResponse) => {
-      if (err.status === 401) auth.cerrarSesionYVolverAlLogin(); // tras intentar 1 refresh
-      if (err.status === 403) auth.avisarSinPermiso();
-      return throwError(() => err);
-    }),
-  );
-};
-```
-
-### B.2 Control visual condicional (UI/UX)
-
-**Menú lateral filtrado con una signal computada** **[Hecho]**. El shell recalcula las opciones solo cuando cambian los permisos. Un empleado no ve "Aprobaciones" ni "Cuadro de mando", así que no puede intentar entrar desde el menú.
-
-```ts
-// src/app/layout/shell/shell.component.ts
-public readonly menu = computed(() => {
-  const permisos = this.auth.permisos();
-  return MENU.filter((item) => !item.permiso || permisos.includes(item.permiso));
-});
-```
-
-- **Cabecera de sesión y cierre** **[Hecho]**. El menú muestra el nombre, el rol y el departamento. "Cerrar sesión" usa `replaceUrl` para que el botón Atrás no vuelva a la zona privada.
-- **Botones de acción** (aprobar, exportar) **[Fase 2-3]**. Se mostrarán con `@if (auth.tienePermiso('gastos:aprobar'))`. Cuando se repita en varias pantallas se encapsulará en una directiva estructural `*appTienePermiso`.
-- **Ocultar no es proteger.** La interfaz solo evita errores al usuario; la seguridad la ponen los guards en el cliente y, sobre todo, las **políticas RLS** de Supabase en la base de datos **[Fase 3]**.
+- **RLS activado en las 3 tablas:**
+  - Un empleado **solo lee y crea sus propios gastos** (`empleado_id = auth.uid()`).
+  - Solo puede editar o borrar los suyos mientras están **pendientes**.
+  - Administración (`es_admin()`) ve y revisa todos.
+- **Trigger `gastos_reglas_negocio`:**
+  - La fecha no puede ser futura.
+  - Un empleado siempre crea en estado `pendiente`.
+  - Solo administración cambia el estado, y queda registrado quién y cuándo.
+- **Registro.** Un trigger sobre `auth.users` crea el perfil con rol `empleado`: nadie puede registrarse como administrador desde la app.
+- **Validación asíncrona del correo.** La función `email_disponible()` (`security definer`) devuelve solo `true`/`false` y no expone ningún dato.
+- **Claves:**
+  - En el frontend solo va la clave **pública** (`anon`).
+  - La URL y la clave **no están en el repositorio**: se generan en `src/environments/supabase.config.ts`, que Git ignora, a partir de `.env` en local o de las variables de entorno de Vercel.
+  - La clave `service_role` nunca sale del panel de Supabase.
+- **Cabeceras HTTP** en Vercel (`vercel.json`): `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` (evita *clickjacking*), `Referrer-Policy` y `Permissions-Policy`.
 
 ---
 
@@ -157,27 +138,27 @@ public readonly menu = computed(() => {
 
 | Criterio | Guard en el router (elegido) | Comprobación en el componente |
 |---|---|---|
-| Seguridad | Se decide antes de crear la página: nunca se pinta, ni un instante. | La página se crea y se ve un momento antes de echar al usuario. Fácil de olvidar en una pantalla. |
-| Red / rendimiento | Con `canMatch` no se descarga el código de la página prohibida. | El chunk de la página se descarga siempre. |
-| Mantenibilidad | Toda la política está visible en `app.routes.ts`. | Lógica de acceso repetida y dispersa por los componentes. |
-| Escalabilidad | Una ruta nueva solo necesita añadir su guard. | Cada pantalla nueva tiene que copiar la comprobación. |
+| Seguridad | La página prohibida no se crea ni se pinta | Se crea y se ve un instante antes de echar al usuario; es fácil olvidarla en una pantalla |
+| Red | Con `canMatch` no se descarga su código | El chunk se descarga siempre |
+| Mantenibilidad | Toda la política está a la vista en `app.routes.ts` | Lógica repetida en cada componente |
+| Escalabilidad | Una ruta nueva solo necesita añadir su guard | Cada pantalla nueva copia la comprobación |
 
 **Interceptor HTTP vs. cabeceras manuales en cada servicio**
 
 | Criterio | Interceptor (elegido) | Cabeceras manuales |
 |---|---|---|
-| Seguridad | Un único punto controla a qué dominios se envía el token. | Riesgo de olvidar la cabecera o de mandarla a un tercero. |
-| Errores 401/403 | Gestión centralizada y renovación compartida. | Cada servicio trata el error a su manera. |
-| Mantenibilidad | Cambiar el esquema de autenticación toca un archivo. | Hay que tocar todas las llamadas. |
-| Coste | Una función más en la cadena (despreciable). | Código duplicado. |
+| Seguridad | Un único punto decide a qué dominio viaja el token | Riesgo de olvidar la cabecera o de enviarla a terceros |
+| Errores 401/403 | Centralizados, con renovación compartida | Cada servicio los trata a su manera |
+| Mantenimiento | Cambiar el esquema de autenticación toca un archivo | Hay que tocar todas las llamadas |
+| Sobrecarga | Una función más en la cadena (despreciable) | Código duplicado |
 
-**RBAC vs. ABAC vs. flag booleano (`isAdmin`)**
+**RBAC vs. ABAC vs. flag `isAdmin`**
 
-| Criterio | Flag `isAdmin` | **RBAC (elegido)** | ABAC (por atributos) |
+| Criterio | `isAdmin` | **RBAC (elegido)** | ABAC |
 |---|---|---|---|
-| Expresividad | Solo dos estados. | Roles con conjuntos de permisos. | Reglas con atributos del usuario, del recurso y del contexto (hora, importe...). |
-| Escalabilidad | Un rol nuevo obliga a cambiar todo el código. | Un rol nuevo (p. ej. `supervisor`) es una línea en la matriz. | Muy flexible, pero las reglas crecen rápido. |
-| Mantenibilidad | Condiciones `if (isAdmin)` repartidas por todo el código. | Matriz única y legible. | Necesita un motor de políticas y es más difícil de auditar. |
-| Encaje en GastoFlow | Insuficiente. | **Adecuado**: dos o tres roles con permisos claros. | Excesivo. Lo único "por atributo" (un empleado solo ve **sus** gastos) se resuelve en la base de datos con RLS (`empleado_id = auth.uid()`). |
+| Expresividad | Dos estados | Roles con conjuntos de permisos | Reglas sobre atributos del usuario, del recurso y del contexto |
+| Escalar a un rol nuevo | Hay que tocar todo el código | Una línea en `PERMISOS_POR_ROL` | Escribir reglas nuevas |
+| Auditoría | `if` repartidos por el código | Una única matriz legible | Necesita un motor de políticas |
+| Encaje en GastoFlow | Insuficiente | **Adecuado** (2 roles, 7 permisos) | Excesivo. La única regla "por atributo" (un empleado solo ve **sus** gastos) la resuelve RLS en la base de datos |
 
-**Conclusión.** GastoFlow combina **guards funcionales con `canMatch`** (y sin precarga), un **interceptor HTTP único** y **RBAC con permisos atómicos** centralizado en `AuthService`. Así hay tres capas independientes: la interfaz (qué se muestra), el router (a dónde se puede ir) y la base de datos con RLS (qué datos se pueden leer o modificar). Si falla una, las otras siguen protegiendo los datos.
+**Conclusión.** GastoFlow combina **guards funcionales con `canMatch`** (sin precarga), un **interceptor HTTP único** con renovación de token y **RBAC con permisos atómicos** centralizado en `AuthService`. Todo ello está respaldado por **RLS y triggers** en la base de datos, que son la barrera final.
