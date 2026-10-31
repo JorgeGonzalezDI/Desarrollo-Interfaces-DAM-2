@@ -1,0 +1,131 @@
+// Mobile-first: en móvil cada fila es una tarjeta; desde 768px, tabla clásica.
+.buscador {
+  padding: 0 0 8px;
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 8px;
+  color: var(--ion-color-medium-shade);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 4px 0 8px;
+}
+
+.contador {
+  color: var(--ion-color-medium-shade);
+  font-weight: 400;
+}
+
+thead {
+  display: none; // en móvil el título va en cada celda (data-titulo)
+}
+
+tr {
+  display: block;
+  border: 1px solid var(--ion-color-step-150, #d7d8da);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+td {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+
+  &::before {
+    content: attr(data-titulo);
+    font-weight: 600;
+    color: var(--ion-color-medium-shade);
+  }
+
+  &.ocultar-movil {
+    display: none;
+  }
+}
+
+td.acciones {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  &::before {
+    content: none;
+  }
+}
+
+.ordenar {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.solo-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (min-width: 768px) {
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    display: table-row;
+    border: 0;
+    border-bottom: 1px solid var(--ion-color-step-150, #d7d8da);
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--ion-color-primary);
+  }
+
+  td,
+  td.ocultar-movil {
+    display: table-cell;
+    padding: 8px;
+    vertical-align: middle;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  td.tipo-moneda {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  td.acciones {
+    white-space: nowrap;
+    text-align: right;
+  }
+}
