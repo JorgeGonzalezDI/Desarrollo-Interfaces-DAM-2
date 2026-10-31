@@ -1,6 +1,5 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <!-- Botón hamburguesa: solo se ve en móvil/tablet (en escritorio el menú está fijo) -->
     <ion-buttons slot="start">
       <ion-menu-button aria-label="Abrir menú"></ion-menu-button>
     </ion-buttons>
@@ -10,13 +9,30 @@
 
 <ion-content class="ion-padding">
   <main>
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title><h1 class="titulo-card">Aprobaciones</h1></ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Bandeja de gastos pendientes para aprobar o rechazar. Solo para Administración. Se completa en la Fase 2-3.</p>
-      </ion-card-content>
-    </ion-card>
+    <h1>Aprobaciones</h1>
+    <p>
+      <strong>{{ store.pendientes().length }}</strong> gastos pendientes por un total de
+      <strong>{{ importePendiente() }}</strong>.
+    </p>
+
+    <ion-segment [value]="vista()" (ionChange)="cambiarVista($event.detail.value)" aria-label="Qué gastos ver">
+      <ion-segment-button value="pendientes"><ion-label>Pendientes</ion-label></ion-segment-button>
+      <ion-segment-button value="todos"><ion-label>Todos</ion-label></ion-segment-button>
+    </ion-segment>
+
+    @if (store.error()) {
+      <ion-note color="danger" class="aviso" role="alert">{{ store.error() }}</ion-note>
+    }
+
+    <app-tabla-datos
+      titulo="Gastos de la plantilla"
+      [columnas]="columnas"
+      [filas]="filas()"
+      [acciones]="acciones()"
+      [cargando]="store.cargando()"
+      [descripcionFila]="describir"
+      textoVacio="No hay gastos pendientes. ¡Todo al día!"
+      (accion)="alAccion($event)"
+    />
   </main>
 </ion-content>
