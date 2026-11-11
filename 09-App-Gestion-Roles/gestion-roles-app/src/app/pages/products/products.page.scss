@@ -1,0 +1,36 @@
+.desc {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--app-muted);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price {
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+// Pastilla de stock: verde normal, naranja si quedan pocos, roja si no hay
+.stock {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ion-color-success-shade);
+  background: rgba(var(--ion-color-success-rgb), 0.14);
+
+  &.low {
+    color: var(--ion-color-warning-shade);
+    background: rgba(var(--ion-color-warning-rgb), 0.18);
+  }
+
+  &.out {
+    color: var(--ion-color-danger);
+    background: rgba(var(--ion-color-danger-rgb), 0.12);
+  }
+}
