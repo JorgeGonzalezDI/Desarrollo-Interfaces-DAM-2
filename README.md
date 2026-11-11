@@ -26,6 +26,7 @@ se publican en **Vercel**.
 | 06 | Supabase: login y roles | Autenticación, tabla de perfiles con rol, seguridad RLS y CRUD de clientes solo para administradores. | [`06-Supabase-Auth-Roles`](06-Supabase-Auth-Roles) | — |
 | 07 | Formularios reactivos | Alta de productos de inventario: Reactive Forms, validadores personalizados, signal que bloquea el formulario mientras guarda, `ion-toast` y guardado local con Capacitor Preferences. | [`07-Formularios-Reactivos-Inventario`](07-Formularios-Reactivos-Inventario) | — |
 | 08 | Lab Guards: control de acceso | Login con dos roles, sesión en un signal persistida en `sessionStorage`, **functional guards** (`authGuard`) que redirigen con `UrlTree` y factoría `roleGuard(rol)` para que el operador no entre en `/admin`. | [`08-Lab-Guards-Auth`](08-Lab-Guards-Auth) | — |
+| 09 | App Gestión de Roles | App completa que junta las prácticas 04-08: login con Supabase Auth, roles `admin` / `user` con RLS, CRUD de productos con formularios reactivos, guards (`authGuard`, `roleGuard`) y panel para cambiar roles. Estilo propio con modo oscuro automático. | [`09-App-Gestion-Roles`](09-App-Gestion-Roles) | — |
 
 Cada carpeta contiene el proyecto (la carpeta con `package.json`), el PDF entregado y `capturas/`.
 La mayoría incluye también un `README.md` con la tabla requisito → fichero y
@@ -57,6 +58,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 ├── 06-Supabase-Auth-Roles/dam-crm-app/
 ├── 07-Formularios-Reactivos-Inventario/inventario-app/
 ├── 08-Lab-Guards-Auth/auth-guard-app/
+├── 09-App-Gestion-Roles/gestion-roles-app/      App de gestión de productos con roles (Supabase)
 └── actualizar-registro.mjs              Regenera el registro de trabajo de este README
 ```
 
