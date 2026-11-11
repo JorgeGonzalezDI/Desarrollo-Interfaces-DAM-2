@@ -101,11 +101,16 @@ Generado a partir del historial de Git con `node actualizar-registro.mjs`: cada 
 con su fecha y hora reales.
 
 <!-- REGISTRO:INICIO -->
-**73 commits** en **13 días de trabajo**, del 25-09-2026 al 31-10-2026 (lo más reciente arriba).
+**79 commits** en **16 días de trabajo**, del 25-09-2026 al 11-11-2026 (lo más reciente arriba).
 
 | Fecha | Hora | Trabajo realizado |
 |---|---|---|
-| **31-10-2026** | 21:39 | Merge branch 'feature/calidad-docs' into develop |
+| **11-11-2026** | 15:48 | Merge de app-gestion-roles en main: 09 App Gestion Roles |
+|  | 15:43 | 09 App Gestion Roles: README, datos de demo y fila en el README principal |
+|  | 15:43 | 09 App Gestion Roles: app completa (login, productos, formulario, admin de roles y estilos) |
+| **08-11-2026** | 19:47 | Elimino 09 App Gestion Roles para rehacerla desde cero |
+| **31-10-2026** | 21:40 | Release v1.0.0: GastoFlow completo (Supabase, componentes, dashboard, informes, PWA, CI y documentación) |
+|  | 21:39 | Merge branch 'feature/calidad-docs' into develop |
 |  | 21:39 | Merge branch 'feature/accesibilidad-pwa' into develop |
 |  | 21:39 | Merge branch 'feature/dashboard-informes' into develop |
 |  | 21:39 | Merge branch 'feature/gastos-formularios' into develop |
@@ -143,6 +148,7 @@ con su fecha y hora reales.
 |  | 09:50 | feat(core): modelos de roles y permisos (RBAC), sesion y menu |
 |  | 09:50 | docs: README inicial y propuesta del proyecto (PDF) |
 |  | 09:50 | chore: proyecto base Ionic 9 + Angular 22 (standalone, sin zone.js) |
+| **27-10-2026** | 09:46 | App gestion: proyecto base (ionic start, Capacitor) |
 | **26-10-2026** | 19:30 | README: revision de la practica 05 |
 |  | 19:30 | 05 TechTicket: rehecha (servicio Store con signals, HttpClient, OnPush) + PDF |
 |  | 19:20 | 08 Lab Guards: PDF con mencion a la app general de repaso |
