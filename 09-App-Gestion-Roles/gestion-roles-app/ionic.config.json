@@ -1,0 +1,7 @@
+{
+  "name": "gestion-roles-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

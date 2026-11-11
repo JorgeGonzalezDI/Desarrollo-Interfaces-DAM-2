@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Botón "atrás"; si no hay historial, va a /products -->
+      <ion-back-button defaultHref="/products"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ id() ? 'Editar producto' : 'Nuevo producto' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page">
+  <div class="card form-card">
+  <!-- [formGroup] enlaza con `form` del .ts; (ngSubmit) llama a submit() al enviar -->
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <ion-item class="field" lines="none">
+      <ion-input fill="outline" label="Nombre" labelPlacement="floating" formControlName="name"></ion-input>
+    </ion-item>
+    <ion-item class="field" lines="none">
+      <ion-input fill="outline" label="Descripción" labelPlacement="floating" formControlName="description"></ion-input>
+    </ion-item>
+    <ion-item class="field" lines="none">
+      <ion-input fill="outline" label="Precio" labelPlacement="floating" type="number" formControlName="price"></ion-input>
+    </ion-item>
+    <ion-item class="field" lines="none">
+      <ion-input fill="outline" label="Stock" labelPlacement="floating" type="number" formControlName="stock"></ion-input>
+    </ion-item>
+
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <ion-button type="submit" expand="block" [disabled]="form.invalid || loading()">Guardar</ion-button>
+  </form>
+  </div>
+  </div>
+</ion-content>

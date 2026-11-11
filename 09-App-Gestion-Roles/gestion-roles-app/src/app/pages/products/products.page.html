@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Productos</ion-title>
+    <ion-buttons slot="end">
+      @if (auth.isAdmin()) {
+        <ion-button (click)="goToAdmin()">Usuarios</ion-button>
+        <ion-button fill="solid" (click)="openForm()">Nuevo</ion-button>
+      }
+      <ion-button color="medium" (click)="logout()">Salir</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page">
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <ion-list class="list" lines="none">
+      <!-- @for repite el bloque por cada producto. track p.id = "identifica cada fila por su id" -->
+      @for (p of products(); track p.id) {
+        <ion-item class="item-card">
+          <ion-label>
+            <h2>{{ p.name }}</h2>
+            @if (p.description) {
+              <div class="desc">{{ p.description }}</div>
+            }
+            <div class="meta">
+              <span class="price">{{ p.price }} €</span>
+              <!-- [class.low]: añade la clase "low" solo si se cumple la condición -->
+              <span class="stock" [class.low]="p.stock > 0 && p.stock < 10" [class.out]="p.stock === 0">
+                {{ p.stock }} en stock
+              </span>
+            </div>
+          </ion-label>
+          <!-- Solo el admin ve los botones -->
+          @if (auth.isAdmin()) {
+            <ion-button slot="end" size="small" fill="clear" (click)="openForm(p.id)">Editar</ion-button>
+            <ion-button slot="end" size="small" fill="clear" color="danger" (click)="remove(p.id)">Borrar</ion-button>
+          }
+        </ion-item>
+      } @empty {
+        <!-- @empty: se pinta si el array está vacío -->
+        <ion-item class="empty">Todavía no hay productos</ion-item>
+      }
+    </ion-list>
+  </div>
+</ion-content>

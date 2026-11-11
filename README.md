@@ -26,6 +26,7 @@ se publican en **Vercel**.
 | 06 | Supabase: login y roles | Autenticación, tabla de perfiles con rol, seguridad RLS y CRUD de clientes solo para administradores. | [`06-Supabase-Auth-Roles`](06-Supabase-Auth-Roles) | — |
 | 07 | Formularios reactivos | Alta de productos de inventario: Reactive Forms, validadores personalizados, signal que bloquea el formulario mientras guarda, `ion-toast` y guardado local con Capacitor Preferences. | [`07-Formularios-Reactivos-Inventario`](07-Formularios-Reactivos-Inventario) | — |
 | 08 | Lab Guards: control de acceso | Login con dos roles, sesión en un signal persistida en `sessionStorage`, **functional guards** (`authGuard`) que redirigen con `UrlTree` y factoría `roleGuard(rol)` para que el operador no entre en `/admin`. | [`08-Lab-Guards-Auth`](08-Lab-Guards-Auth) | — |
+| 09 | App Gestión de Roles | App completa que junta las prácticas 04-08: login con Supabase Auth, roles `admin` / `user` con RLS, CRUD de productos con formularios reactivos, guards (`authGuard`, `roleGuard`) y panel para cambiar roles. Estilo propio con modo oscuro automático. | [`09-App-Gestion-Roles`](09-App-Gestion-Roles) | — |
 | 10 | **Proyecto final: GastoFlow** (en curso) | Gestión de gastos corporativos con dos roles (empleado / administración): menú lateral con *lazy loading*, modelo **RBAC** de permisos, login con formulario reactivo y `returnUrl`, guards `canMatch` (`authGuard`, `guestGuard`, `permisoGuard`) y ayuda integrada. Se desarrolla con **Git Flow** en la rama `develop` (ver [Ramas](#ramas)). Memoria de seguridad en [`docs/security-architecture.md`](10-Proyecto-Final-GastoFlow/docs/security-architecture.md). | [`10-Proyecto-Final-GastoFlow`](10-Proyecto-Final-GastoFlow) | — |
 
 Cada carpeta contiene el proyecto (la carpeta con `package.json`), el PDF entregado y `capturas/`.
@@ -43,6 +44,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 | 02 · `corporateApp` | 25-10-2026 | Se completa lo que faltaba de la práctica: **Nosotros** pide la ubicación con `@capacitor/geolocation` y calcula la distancia a la oficina con la fórmula de **Haversine**; **Contacto** tiene un formulario (`ngModel` sobre `signal`) y guarda los mensajes con `@capacitor/preferences`. El servicio de productos pasa a `@Service()` con **`inject()`** y el estado va en **`signal()`**; las plantillas usan `@for` / `@if` / `@empty`. Código comentado. |
 | 03 · `dam2-productos` | 26-10-2026 | Rehecha a mano y completadas las 10 peticiones: además de la tabla con estados de carga / error / reintento, **página About**, **paginación** con `limit` y `skip` (signal `pagina` y `computed` para el total de páginas), **modo oscuro** con un `ThemeService` (signal + clase `ion-palette-dark` + `localStorage`) y **vista de cards** con selector `ion-segment`. Rutas con *lazy loading* y estado en `signal()`. Código comentado. |
 | 05 · `tech-ticket` | 26-10-2026 | El código no se había subido (solo quedaban 3 ficheros de config). Rehecha: servicio **Store** con signals (`state` privado + `computed` de solo lectura), `HttpClient` contra una API, filtro Todos/Abiertos/Cerrados calculado en memoria y componente con `ChangeDetectionStrategy.OnPush`. Código comentado. |
+| 09 · `gestion-roles-app` | 11-11-2026 | App nueva que **junta en un solo proyecto lo trabajado en las prácticas 04 a 08**: signals (`signal`, `computed`), servicios con `Observable`, formularios reactivos con validadores, `authGuard` / `roleGuard` con `UrlTree` y Supabase con Auth, roles y RLS. Incluye panel de administración de roles, estilo propio con modo oscuro y despliegue en Vercel. |
 
 ## Estructura
 
@@ -58,6 +60,7 @@ nueva queda mejor que la entregada, sustituye a la anterior (la antigua sigue en
 ├── 06-Supabase-Auth-Roles/dam-crm-app/
 ├── 07-Formularios-Reactivos-Inventario/inventario-app/
 ├── 08-Lab-Guards-Auth/auth-guard-app/
+├── 09-App-Gestion-Roles/gestion-roles-app/      App de gestión de productos con roles (Supabase)
 ├── 10-Proyecto-Final-GastoFlow/          Proyecto final (app en la raíz de la carpeta + docs/)
 └── actualizar-registro.mjs              Regenera el registro de trabajo de este README
 ```

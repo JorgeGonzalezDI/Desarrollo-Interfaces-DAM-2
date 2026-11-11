@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/products"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Usuarios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page">
+    @if (error()) {
+      <div class="error">{{ error() }}</div>
+    }
+
+    <ion-list class="list" lines="none">
+      @for (p of profiles(); track p.id) {
+        <ion-item class="item-card">
+          <ion-label>
+            <h2>{{ p.email }}</h2>
+            <span class="badge" [class.admin]="p.role === 'admin'">{{ p.role }}</span>
+          </ion-label>
+          <!-- En tu propia fila no hay botón (te quitarías el admin a ti mismo): sale una etiqueta "Tú" -->
+          @if (p.id !== myId) {
+            <ion-button slot="end" size="small" fill="outline" (click)="toggleRole(p)">
+              Hacer {{ p.role === 'admin' ? 'user' : 'admin' }}
+            </ion-button>
+          } @else {
+            <span slot="end" class="you">Tú</span>
+          }
+        </ion-item>
+      }
+    </ion-list>
+  </div>
+</ion-content>

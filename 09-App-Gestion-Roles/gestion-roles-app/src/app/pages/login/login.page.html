@@ -1,0 +1,33 @@
+<ion-content>
+  <div class="login-wrap">
+    <div class="card login-card">
+      <h1>Gestión de roles</h1>
+      <p class="subtitle">Inicia sesión para continuar</p>
+
+      <!-- [formGroup] enlaza este <form> con la propiedad `form` del .ts.
+           (ngSubmit) llama a submit() al enviar el formulario (botón o Enter). -->
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <ion-item class="field" lines="none">
+          <!-- formControlName="email" enlaza este input con el campo `email` del grupo -->
+          <ion-input label="Email" labelPlacement="floating" fill="outline" type="email" formControlName="email"></ion-input>
+        </ion-item>
+
+        <ion-item class="field" lines="none">
+          <ion-input label="Contraseña" labelPlacement="floating" fill="outline" type="password" formControlName="password"></ion-input>
+        </ion-item>
+
+        <!-- @if: solo pinta el bloque si error() tiene texto. Las señales se leen con () -->
+        @if (error()) {
+          <div class="error">{{ error() }}</div>
+        }
+
+        <!-- [disabled]: el botón se apaga si el formulario es inválido o estamos cargando -->
+        <ion-button type="submit" expand="block" [disabled]="form.invalid || loading()">
+          {{ loading() ? 'Entrando...' : 'Entrar' }}
+        </ion-button>
+
+      </form>
+    </div>
+  </div>
+</ion-content>
